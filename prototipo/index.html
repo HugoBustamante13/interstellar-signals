@@ -420,6 +420,37 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .prose ul { padding-left: 20px; display: grid; gap: 6px; }
 .dtable td:first-child { font-weight: 600; white-space: nowrap; }
 
+/* ---------- qué estoy vigilando ---------- */
+.focus { display: grid; gap: 12px; min-width: 0; }
+.focus-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 24px; }
+.focus-head h2 { margin: 2px 0 0; font-family: var(--f-display); font-size: 26px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; line-height: 1.1; }
+.focus-head .chart-note { max-width: 58ch; }
+.focus-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1080px) { .focus-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .focus-grid { grid-template-columns: minmax(0, 1fr); } }
+.fcard { padding: 14px 16px; display: grid; gap: 10px; align-content: start; border-top: 3px solid var(--nodata); }
+.fcard[data-st="0"] { border-top-color: var(--ok); } .fcard[data-st="1"] { border-top-color: var(--warn); } .fcard[data-st="2"] { border-top-color: var(--crit); }
+.fcard-h { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 10px; }
+.fcard h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.fcard p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 2px; background: var(--surface-2);
+  font-family: var(--f-data); font-size: 12px; cursor: pointer; }
+button.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.chip.ghost { cursor: default; border-style: dashed; background: transparent; color: var(--muted); }
+.fcard-f { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 11.5px; color: var(--muted); padding-top: 8px; border-top: 1px dashed var(--line); }
+.ci-sx { border: 1px dashed var(--line); border-radius: 2px; padding: 10px 14px 12px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; min-width: 0; }
+.ci-sx legend { font-weight: 600; font-size: 13px; padding: 0 6px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ci-sx .hint { font-weight: 400; font-size: 11.5px; color: var(--muted); }
+.ci-sx label { display: inline-flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
+.ci-sx input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+
+/* lectura en vivo desde el celular */
+.livebar { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 8px 12px;
+  border: 1px dashed var(--accent); background: var(--accent-soft); font-size: 12.5px; border-radius: 2px; }
+.livebar b { font-family: var(--f-data); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--crit); }
+
 /* ---------- chequeo propio ---------- */
 .who-pick { display: grid; gap: 6px; justify-items: end; }
 @media (max-width: 640px) { .who-pick { justify-items: start; } }
@@ -430,7 +461,7 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .ci-head h2 { margin: 2px 0 4px; font-family: var(--f-display); font-size: 26px; font-weight: 500; line-height: 1.1; text-transform: uppercase; letter-spacing: .08em; }
 .ci-intro { margin: 0; color: var(--muted); max-width: 68ch; }
 .ci-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
-.ci-field { display: grid; gap: 4px; min-width: 0; }
+.ci-field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0; }
 .ci-field label { font-weight: 600; font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .ci-field .in { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 2px; background: var(--surface-2); }
 .ci-field .in:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
@@ -446,7 +477,7 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .ci-res[data-st="w"] { border-left-color: var(--warn); border-left-style: dashed; }
 .ci-res h3 { margin: 0; font-family: var(--f-display); font-size: 22px; text-transform: uppercase; letter-spacing: .08em; }
 .ci-res ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.ci-res li { display: flex; gap: 10px; align-items: baseline; }
+.ci-res ul li { display: flex; gap: 10px; align-items: baseline; }
 .dot[data-st="w"] { background: transparent; border: 2px dashed var(--warn); }
 .pill[data-st="w"] { background: var(--warn-soft); color: var(--warn); }
 
@@ -513,13 +544,20 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
     </div>
     <form id="ciForm" hidden novalidate>
       <div class="ci-grid" id="ciGrid"></div>
+      <fieldset class="ci-sx" id="ciSymptoms">
+        <legend>Señales de defensas <span class="src">MANUAL</span> <span class="hint">una vez por semana · marca lo que notes</span></legend>
+        <label><input type="checkbox" value="piel"> Erupción o lesión nueva en la piel</label>
+        <label><input type="checkbox" value="boca"> Llagas en la boca o los labios</label>
+        <label><input type="checkbox" value="resp"> Congestión, tos o dolor de garganta</label>
+        <label><input type="checkbox" value="herida"> Una herida que tarda en cerrar</label>
+      </fieldset>
       <div class="ci-actions">
-        <button type="button" class="btn" id="ciSensor">Leer del sensor (FC, SpO₂, temperatura)</button>
+        <button type="button" class="btn" id="ciSensor">Leer de los sensores (FC, SpO₂, temperatura)</button>
         <button type="button" class="btn" id="ciClear">Borrar</button>
         <button type="submit" class="btn primary">Evaluar mi chequeo</button>
       </div>
       <div id="ciResult" aria-live="polite"></div>
-      <p class="chart-note">Prototipo: el chequeo se evalúa en pantalla y no se guarda en tu historial. El sensor está simulado.</p>
+      <p class="chart-note">Prototipo: el chequeo se evalúa en pantalla y no se guarda en tu historial. La camisa, el anillo y el reloj están simulados.</p>
     </form>
   </section>
 
@@ -538,6 +576,12 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
     <svg class="strip" id="strip" preserveAspectRatio="none" role="img" aria-label="Estado general de cada día de la misión"></svg>
     <input type="range" id="day" min="0" max="209" value="0" aria-label="Día de misión">
     <div class="strip-axis"><span id="axL">L−30</span><span>Lanzamiento</span><span id="axR">MD 180</span></div>
+  </section>
+
+  <section class="focus" aria-labelledby="focus-title">
+    <div class="focus-head"><div><div class="eyebrow">Los cuatro cambios que nombra el reto</div><h2 id="focus-title">¿Qué estoy vigilando?</h2></div>
+      <p class="chart-note">Toca un indicador para ver su tendencia. «Directa» significa que el dato mide el problema; «indirecta», que solo vigila señales o lo que te protege.</p></div>
+    <div class="focus-grid" id="focusGrid"></div>
   </section>
 
   <div class="main">
@@ -629,7 +673,7 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   </header>
   <div class="doc-grid">
     <nav class="toc" aria-label="Contenido">
-      <a href="#doc-reto">El reto</a><a href="#doc-peligros">Peligros e indicadores</a><a href="#doc-semaforo">Reglas del semáforo</a>
+      <a href="#doc-reto">El reto</a><a href="#doc-peligros">Peligros e indicadores</a><a href="#doc-flujo">De la medición a la decisión</a><a href="#doc-semaforo">Reglas del semáforo</a>
       <a href="#doc-fuentes">Límites y fuentes</a><a href="#doc-honestidad">Lo que no afirmamos</a><a href="#doc-arquitectura">Arquitectura</a><a href="#doc-equipo">Equipo</a><a href="#doc-pendientes">Pendientes</a>
     </nav>
     <article class="prose">
@@ -645,14 +689,35 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
         <div class="tscroll"><table class="dtable">
           <thead><tr><th>Peligro</th><th>Qué implica</th><th>Indicadores</th></tr></thead>
           <tbody>
-            <tr><td>Gravedad alterada</td><td>El cuerpo se adapta: corazón, músculo, hueso, oído interno.</td><td>FC en reposo, presión arterial, ejercicio, aptitud física</td></tr>
-            <tr><td>Aislamiento y confinamiento</td><td>Grupos pequeños en espacios reducidos durante meses.</td><td>Ánimo, sueño</td></tr>
-            <tr><td>Ambiente cerrado hostil</td><td>La nave controla aire, temperatura, ruido y microbios.</td><td>SpO₂, temperatura</td></tr>
+            <tr><td>Gravedad alterada</td><td>El cuerpo se adapta: corazón, músculo, hueso, oído interno.</td><td>Corazón y circulación; huesos y músculo: FC en reposo, presión arterial, ejercicio, aptitud física</td></tr>
+            <tr><td>Aislamiento y confinamiento</td><td>Grupos pequeños en espacios reducidos durante meses.</td><td>Mente y descanso: ánimo, sueño</td></tr>
+            <tr><td>Ambiente cerrado hostil</td><td>La nave controla aire, temperatura, ruido y microbios.</td><td>SpO₂; defensas: temperatura y lista de señales</td></tr>
             <tr><td>Distancia de la Tierra</td><td>La ayuda médica llega tarde.</td><td>Justifica la guía de acción a bordo</td></tr>
             <tr><td>Radiación</td><td>Neutrones ≈ 30 % de la radiación en la ISS (CSA).</td><td>Todavía no cubierta: requiere dosímetros</td></tr>
           </tbody>
         </table></div>
         <p>La glucosa en ayunas se registra una vez por semana como indicador de nutrición.</p>
+      </section>
+      <section id="doc-flujo">
+        <h2>De la medición a la decisión</h2>
+        <p>La idea es apoyarse en equipos que ya se usan en vuelo. La camisa vigila a diario, el reloj cubre lo que la camisa no hace bien y la ecografía solo entra cuando hay rojo. En este prototipo todos esos datos son simulados o manuales.</p>
+        <div class="tscroll"><table class="dtable">
+          <thead><tr><th>Fuente</th><th>Qué aporta</th><th>Antecedente real</th></tr></thead>
+          <tbody>
+            <tr><td>Camisa inteligente</td><td>FC, respiración, SpO₂, temperatura de piel y actividad, de forma continua.</td><td>Bio-Monitor (Astroskin) de la agencia canadiense, usado en la ISS en sesiones de unas 72 horas.</td></tr>
+            <tr><td>Anillo</td><td>Saturación de oxígeno en el dedo.</td><td>Por verificar: no confirmamos qué anillo se ha usado en vuelo.</td></tr>
+            <tr><td>Reloj de muñeca</td><td>Sueño por actigrafía y exposición a la luz, durante semanas.</td><td>Actiwatch en la ISS: 21 astronautas y 3.248 días de registro.</td></tr>
+            <tr><td>Manual</td><td>Presión con manguito, glucosa, ánimo, ejercicio y lista de señales de defensas.</td><td>La camisa solo estima la presión; para alertar se usa la medida directa.</td></tr>
+            <tr><td>Ecografía</td><td>Diagnóstico cuando hay rojo, no vigilancia diaria.</td><td>En la ISS la hace un tripulante guiado a distancia por un experto en Tierra.</td></tr>
+          </tbody>
+        </table></div>
+        <ul>
+          <li><b>Verde:</b> ves tu panel, sigues tu rutina y lo comentas en tu conferencia médica privada semanal.</li>
+          <li><b>Amarillo:</b> repites la medición y sigues la guía. Si no se normaliza, avisas al oficial médico de a bordo.</li>
+          <li><b>Rojo, ahora:</b> sigues la guía y avisas al oficial médico, que decide los primeros pasos y puede pedir una ecografía.</li>
+          <li><b>Rojo, cuando haya enlace:</b> el médico de vuelo en Tierra confirma o corrige. Cerca de la Tierra eso es casi inmediato; hacia Marte puede tardar, y por eso los primeros pasos se dan a bordo.</li>
+        </ul>
+        <p>Dos de los cuatro problemas del reto no tienen una medida diaria directa. Las defensas se vigilan por señales (temperatura y una lista semanal) y el hueso por lo que lo protege (ejercicio de fuerza). La app lo dice así en cada tarjeta.</p>
       </section>
       <section id="doc-semaforo">
         <h2>Reglas del semáforo</h2>
@@ -690,7 +755,7 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
       <section id="doc-arquitectura">
         <h2>Arquitectura</h2>
         <ul>
-          <li><b>Sensor:</b> ESP32 para frecuencia cardíaca, SpO₂ y temperatura.</li>
+          <li><b>Sensores:</b> en la demo, un ESP32 hace el papel de la camisa (frecuencia cardíaca, SpO₂ y temperatura). En misión serían una camisa tipo Bio-Monitor y un reloj de actigrafía.</li>
           <li><b>Backend:</b> FastAPI y SQLite. El semáforo de línea base personal se integra importando el mismo módulo que se evaluó en el simulador.</li>
           <li><b>Frontend:</b> React, TypeScript, Vite, Tailwind y Recharts.</li>
           <li><b>Simulador:</b> Python. Genera las misiones sintéticas y evalúa el semáforo.</li>
@@ -713,6 +778,8 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
         <h2>Pendientes</h2>
         <ul>
           <li>Radiación acumulada, SANS, densidad ósea y función vestibular siguen sin cubrir.</li>
+          <li>La regla de las señales de defensas (dos señales, o una con 38 °C) es un supuesto del equipo y no tiene histórico simulado.</li>
+          <li>La camisa mide temperatura de piel, no central: los límites de fiebre necesitan confirmación con termómetro.</li>
           <li>Confirmar dónde mide el sensor de temperatura: cambia los límites de 38,0 y 38,5 °C.</li>
           <li>Decidir si la presión cuenta como un solo indicador en la regla de dos amarillos.</li>
         </ul>
@@ -736,13 +803,13 @@ const START = { aid: "Carlos", day: 31, sel: "bp_sys" };
 
 const ORDER = ["hr_rest", "bp_sys", "bp_dia", "spo2", "temp", "glucose", "sleep", "mood", "exercise", "fitness"];
 const IND = {
-  hr_rest:  { name: "FC en reposo", unit: "lpm", nd: 0, src: "SENSOR", zone: "heart" },
+  hr_rest:  { name: "FC en reposo", unit: "lpm", nd: 0, src: "CAMISA", zone: "heart" },
   bp_sys:   { name: "Presión sistólica", unit: "mmHg", nd: 0, src: "MANUAL", zone: "arm" },
   bp_dia:   { name: "Presión diastólica", unit: "mmHg", nd: 0, src: "MANUAL", zone: "arm" },
-  spo2:     { name: "Saturación de O₂", unit: "%", nd: 0, src: "SENSOR", zone: "hand" },
-  temp:     { name: "Temperatura", unit: "°C", nd: 1, src: "SENSOR", zone: "temp" },
+  spo2:     { name: "Saturación de O₂", unit: "%", nd: 0, src: "ANILLO", zone: "hand" },
+  temp:     { name: "Temperatura", unit: "°C", nd: 1, src: "CAMISA", zone: "temp" },
   glucose:  { name: "Glucosa en ayunas", unit: "mg/dL", nd: 0, src: "MANUAL", zone: "abdomen", weekly: true },
-  sleep:    { name: "Sueño", unit: "h", nd: 1, src: "MANUAL", zone: "head" },
+  sleep:    { name: "Sueño", unit: "h", nd: 1, src: "RELOJ", zone: "head" },
   mood:     { name: "Ánimo", unit: "/ 5", nd: 1, src: "MANUAL", zone: "head" },
   exercise: { name: "Ejercicio", unit: "min", nd: 0, src: "MANUAL", zone: "leg" },
   fitness:  { name: "Aptitud física", unit: "% prevuelo", nd: 1, src: "PRUEBA", zone: "leg", sparse: true },
@@ -943,11 +1010,12 @@ function render() {
   const d = a.day[i];
   const states = Object.fromEntries(ORDER.map(k => [k, indState(a, i, k)]));
 
+  applyLive(a, i, states);
   renderCrewNav(d);
 
   // tripulación
   $("#crew").innerHTML = Object.keys(DATA).map(id => {
-    const st = DATA[id].status[setDayClamp(id, d)];
+    const st = state.live && state.live.aid === id && state.live.overall != null ? state.live.overall : DATA[id].status[setDayClamp(id, d)];
     return `<button type="button" data-aid="${id}" aria-pressed="${id === state.aid}" data-st="${st}"><i class="dot" data-st="${st}"></i>${id}<span class="sx">${DATA[id].sex}</span></button>`;
   }).join("");
 
@@ -983,7 +1051,9 @@ function render() {
 
   renderStatus(a, i, states);
   renderList(a, i, states);
+  renderFocus(states);
   renderChart();
+  LiveLink.context();
 }
 
 // ---------- figura 3D (Three.js) ----------
@@ -1461,10 +1531,41 @@ function openDay(aid, j, k) {
   scrollTo(0, 0);
 }
 
+// ---------- los cuatro problemas del reto ----------
+// Cada tarjeta agrupa los indicadores que sirven para vigilar un problema y dice con franqueza qué tan directa es la medida.
+const FOCUS = [
+  { id: "cardio", name: "Corazón y circulación", inds: ["hr_rest", "bp_sys", "bp_dia", "spo2"], cover: "Directa",
+    why: "En vuelo los líquidos suben hacia la cabeza y la presión suele bajar unos 8–9 mmHg (Norsk 2015). Por eso te comparas con tu propia línea base y no con un umbral de la Tierra.",
+    how: "Camisa: FC · Anillo: SpO₂ · Manguito: presión" },
+  { id: "mente", name: "Mente y descanso", inds: ["mood", "sleep"], cover: "Directa",
+    why: "En 21 astronautas de la ISS el sueño medio fue de 6,4 h, y de 5,4 h cuando el reloj interno estaba desajustado (Flynn-Evans 2016). Dormir poco y el aislamiento pesan sobre el ánimo.",
+    how: "Reloj: sueño y luz · Manual: ánimo" },
+  { id: "defensas", name: "Defensas", inds: ["temp"], cover: "Indirecta", extra: "Señales semanales en tu chequeo",
+    why: "En misiones a la ISS, 14 de 23 astronautas eliminaron virus latentes reactivados; casi siempre sin síntomas, a veces con lesiones en la piel (Rooney 2019). No medimos tus defensas: vigilamos señales.",
+    how: "Camisa: temperatura · Manual: lista de señales" },
+  { id: "hueso", name: "Huesos y músculo", inds: ["exercise", "fitness"], cover: "Indirecta",
+    why: "Con ejercicio de fuerza, energía suficiente y vitamina D, la densidad ósea se mantuvo en la mayoría de regiones en misiones de 4 a 6 meses (Smith 2012). No medimos tu hueso: medimos lo que lo protege.",
+    how: "Manual: sesiones de ejercicio · Prueba: aptitud" },
+];
+ACTIONS.immune = ["<b>Cuéntale al oficial médico</b> qué señales tienes y desde cuándo.", "Si es en la piel, toma una foto diaria para comparar.", "Cuida el sueño y la hidratación de los próximos días y repite tu temperatura mañana."];
+function renderFocus(states) {
+  $("#focusGrid").innerHTML = FOCUS.map(F => {
+    const st = Math.max(-1, ...F.inds.map(k => states[k] ? states[k].st ?? -1 : -1));
+    const chips = F.inds.map(k => { const q = states[k] ? states[k].st ?? -1 : -1;
+      return `<button type="button" class="chip" data-k="${k}" data-st="${q}" aria-pressed="${state.sel === k}"><i class="dot" data-st="${q}"></i>${IND[k].name}</button>`; }).join("");
+    return `<article class="card fcard" data-st="${st}">
+      <div class="fcard-h"><h3>${F.name}</h3><span class="pill" data-st="${st}"><i class="dot" data-st="${st}"></i>${ST_WORD[st]}</span></div>
+      <p>${F.why}</p>
+      <div class="chips">${chips}${F.extra ? `<span class="chip ghost">${F.extra}</span>` : ""}</div>
+      <div class="fcard-f"><span class="src">${F.cover === "Directa" ? "MEDIDA DIRECTA" : "MEDIDA INDIRECTA"}</span><span>${F.how}</span></div>
+    </article>`;
+  }).join("");
+}
+
 // ---------- chequeo propio (autoevaluación) ----------
 const CI = [
-  ["hr_rest", "en reposo, al despertar", "SENSOR"], ["spo2", "en reposo, mano quieta", "SENSOR"], ["temp", "oral", "SENSOR"],
-  ["bp_sys", "sentado, tras 5 min", ""], ["bp_dia", "misma toma", ""], ["sleep", "horas de anoche", ""],
+  ["hr_rest", "en reposo, al despertar", "CAMISA"], ["spo2", "en reposo, mano quieta", "ANILLO"], ["temp", "si sale alta, confirma con termómetro", "CAMISA"],
+  ["bp_sys", "con manguito, sentado, tras 5 min", "MANUAL"], ["bp_dia", "misma toma", "MANUAL"], ["sleep", "horas de anoche", "RELOJ"],
   ["mood", "1 muy mal · 5 muy bien", ""], ["exercise", "minutos de hoy", ""], ["glucose", "en ayunas · opcional, semanal", ""],
 ];
 function buildCheckin() {
@@ -1488,7 +1589,7 @@ function buildCheckin() {
       $("#ci-" + k).value = j >= 0 ? fmt(a[k][j], IND[k].nd) : "";
     }
   });
-  $("#ciClear").addEventListener("click", () => { CI.forEach(([k]) => { $("#ci-" + k).value = ""; setErr(k, ""); }); $("#ciResult").innerHTML = ""; });
+  $("#ciClear").addEventListener("click", () => { CI.forEach(([k]) => { $("#ci-" + k).value = ""; setErr(k, ""); }); document.querySelectorAll("#ciSymptoms input").forEach(c => { c.checked = false; }); $("#ciResult").innerHTML = ""; });
   $("#ciForm").addEventListener("submit", (e) => { e.preventDefault(); evaluateCheckin(); });
 }
 function setErr(k, msg) { const f = $("#f-" + k); f.classList.toggle("bad", !!msg); const er = f.querySelector(".err"); er.textContent = msg; er.hidden = !msg; }
@@ -1523,9 +1624,18 @@ function evaluateCheckin() {
     if (k === "spo2" && v > 100) { setErr(k, "La saturación no puede pasar de 100 %."); bad = true; continue; }
     res.push({ k, v, ...evalReading(a, i, k, v) });
   }
+  // señales de defensas: regla del equipo, no un criterio clínico publicado
+  const sx = document.querySelectorAll("#ciSymptoms input:checked").length;
+  if (sx) {
+    const t = res.find(r => r.k === "temp"), fever = !!t && t.v >= 38;
+    const st = sx >= 2 || fever ? 1 : "w";
+    res.push({ k: "immune", label: "Señales de defensas", val: sx === 1 ? "1 señal" : `${sx} señales`, st,
+      why: st === 1 ? (fever ? "Una señal junto con temperatura de 38 °C o más." : "Dos o más señales a la vez.") + " Conviene que el oficial médico lo sepa."
+        : "Una sola señal no es alerta. Obsérvala: si sigue 3 días o aparece otra, avisa al oficial médico." });
+  }
   const out = $("#ciResult");
   if (bad) { out.innerHTML = ""; return; }
-  if (!res.length) { out.innerHTML = `<p class="chart-note">Escribe al menos una medición o usa «Leer del sensor».</p>`; return; }
+  if (!res.length) { out.innerHTML = `<p class="chart-note">Escribe al menos una medición, marca una señal o usa «Leer de los sensores».</p>`; return; }
   const rank = { 0: 0, w: 1, 1: 2, 2: 3 };
   const top = res.reduce((m, r) => rank[r.st] > rank[m] ? r.st : m, 0);
   const heads = { 0: "Todo dentro de lo esperado para ti", w: "Vigila: repite estas mediciones", 1: "Amarillo: atiende estos puntos", 2: "Rojo: avisa ahora al oficial médico" };
@@ -1534,15 +1644,102 @@ function evaluateCheckin() {
   if (top === 2) steps.push("<b>Avisa ahora al oficial médico de la tripulación.</b> No esperes respuesta de Tierra para dar los primeros pasos.");
   for (const r of res) {
     if (r.st === 1 || r.st === 2) for (const t of ACTIONS[r.k] || []) if (!steps.includes(t)) steps.push(t);
-    if (r.st === "w") steps.push(`Repite tu medición de ${IND[r.k].name.toLowerCase()} mañana a la misma hora y en las mismas condiciones.`);
+    if (r.st === "w") steps.push(r.k === "immune" ? "Anota la señal que marcaste y vuelve a revisarla mañana." : `Repite tu medición de ${IND[r.k].name.toLowerCase()} mañana a la misma hora y en las mismas condiciones.`);
   }
   if (top === 0) steps.push("Sigue con tu rutina. Registrar a diario mantiene tu banda personal al día.");
   out.innerHTML = `<div class="ci-res" data-st="${top}">
     <div class="status-h"><span class="pill" data-st="${top}"><i class="dot" data-st="${top}"></i>${word[top]}</span><h3>${heads[top]}</h3></div>
-    <ul>${res.map(r => `<li><i class="dot" data-st="${r.st}"></i><span><b>${IND[r.k].name}</b> · ${fmt(r.v, IND[r.k].nd)} ${IND[r.k].unit}. ${esc(r.why)}</span></li>`).join("")}</ul>
+    <ul>${res.map(r => `<li><i class="dot" data-st="${r.st}"></i><span><b>${r.label || IND[r.k].name}</b> · ${r.val || `${fmt(r.v, IND[r.k].nd)} ${IND[r.k].unit}`}. ${esc(r.why)}</span></li>`).join("")}</ul>
     <div class="guide"><h3>Qué hacer</h3><ol>${steps.map(t => `<li>${t}</li>`).join("")}</ol>
     <p class="note">Orientativa. No reemplaza el criterio del oficial médico.</p></div></div>`;
 }
+
+// ---------- lecturas en vivo desde el celular ----------
+// El celular (prototipo/control.html) hace de camisa, reloj y entradas manuales: envía una lectura SIMULADA al backend
+// y esta página la recoge por sondeo. Cada valor se evalúa con las mismas reglas del chequeo (evalReading).
+// Solo se activa si la página se sirve por http desde el backend, o con ?api=http://IP:8000.
+function applyLive(a, i, states) {
+  const L = state.live;
+  if (!L || L.aid !== state.aid) return;
+  for (const [k, v] of Object.entries(L.values)) {
+    if (!IND[k]) continue;
+    const r = evalReading(a, i, k, v);
+    states[k] = { ...states[k], v, vi: i, stale: false, st: r.st === "w" ? 0 : r.st, watch: r.st === "w", live: true, liveWhy: r.why };
+  }
+  const n = L.symptoms.length, t = L.values.temp, fever = t != null && t >= 38;
+  L.immune = !n ? null : n >= 2 || fever
+    ? { n, st: 1, why: (fever ? "Una señal junto con temperatura de 38 °C o más." : "Dos o más señales a la vez.") + " Conviene que el oficial médico lo sepa." }
+    : { n, st: "w", why: "Una sola señal no es alerta. Obsérvala: si sigue 3 días o aparece otra, avisa al oficial médico." };
+  const sts = ORDER.filter(k => k !== "glucose").map(k => states[k].st);
+  const yellows = sts.filter(x => x === 1).length + (L.immune && L.immune.st === 1 ? 1 : 0);
+  let overall = Math.max(0, ...sts, L.immune && L.immune.st === 1 ? 1 : 0);
+  if (yellows >= 2) overall = 2; // regla combinada: dos amarillos a la vez cuentan como rojo
+  L.overall = overall;
+}
+const ECHO_EXAM = { corazon: "corazón", vasos: "vasos", abdomen: "abdomen", ojo: "ojo" };
+const ECHO_RES = { sin_hallazgos: "Anotada sin hallazgos.", hallazgo: "Se anotó un hallazgo.", repetir: "La imagen no fue clara." };
+function liveSteps(L, states) {
+  const out = [];
+  if (L.ultrasound) out.push({ sin_hallazgos: "Guarda la ecografía en tu registro: el médico de vuelo la revisará cuando haya enlace.",
+    hallazgo: "<b>Muéstrale la ecografía al oficial médico</b> y envíala al médico de vuelo en cuanto haya enlace.",
+    repetir: "Repite la ecografía siguiendo la guía paso a paso: la imagen no fue clara." }[L.ultrasound.result]);
+  for (const k of ORDER) if (states[k].watch) out.push(`Repite tu medición de ${IND[k].name.toLowerCase()} a la misma hora y en las mismas condiciones.`);
+  if (L.immune) out.push(...(L.immune.st === 1 ? ACTIONS.immune : ["Anota la señal que marcaste y vuelve a revisarla mañana."]));
+  return out;
+}
+const LiveLink = (() => {
+  const q = new URLSearchParams(location.search).get("api");
+  const API = (q || (location.protocol === "http:" ? location.origin : "")).replace(/\/$/, "");
+  const api = { on: !!API, context() {} };
+  if (!API) return api;
+  const KEYS = ["hr_rest", "spo2", "temp", "sleep", "bp_sys", "bp_dia", "mood", "exercise", "glucose"];
+  let seq = null, sent = "";
+  function receive(R) {
+    if (R.cleared) { state.live = null; render(); return; }
+    if (!DATA[R.astronaut]) return;
+    Live.stop();
+    const soloEco = R.ultrasound && !Object.keys(R.values || {}).length && !(R.symptoms || []).length;
+    if (soloEco && state.live && state.live.aid === R.astronaut) { // la ecografía se suma a la lectura que ya estaba en pantalla
+      state.live.ultrasound = R.ultrasound; state.live.at = new Date().toLocaleTimeString("es-CO", { hour12: false }); render(); return;
+    }
+    state.live = { ultrasound: R.ultrasound || null, aid: R.astronaut, values: R.values || {}, symptoms: R.symptoms || [], scenario: R.scenario || "",
+      at: new Date().toLocaleTimeString("es-CO", { hour12: false }), overall: null };
+    if (state.aid !== R.astronaut) chooseAstronaut(R.astronaut); else render();
+    // abre la tendencia del indicador que más llama la atención
+    const a = DATA[state.aid], hit = Object.keys(state.live.values).filter(k => IND[k])
+      .map(k => [k, evalReading(a, state.i, k, state.live.values[k]).st]).sort((x, y) => ({ 0: 0, w: 1, 1: 2, 2: 3 })[y[1]] - ({ 0: 0, w: 1, 1: 2, 2: 3 })[x[1]])[0];
+    if (hit && hit[1] !== 0) { state.sel = hit[0]; state.zone = IND[hit[0]].zone; render(); }
+    if (route !== "astronautas") location.hash = "astronautas";
+  }
+  async function poll() {
+    try {
+      const j = await (await fetch(`${API}/live?since=${seq ?? 0}`)).json();
+      if (seq === null) { seq = j.seq; return; } // lo enviado antes de abrir la página no cuenta
+      if (j.seq > seq) { seq = j.seq; if (j.reading) receive(j.reading); }
+    } catch (e) { /* backend apagado: la página sigue con los datos de la misión */ }
+  }
+  // le cuenta al control quiénes hay y cuál es su línea base en el día que se está viendo
+  api.context = () => {
+    const key = `${state.aid}|${state.i}`;
+    if (key === sent) return;
+    sent = key;
+    const astronauts = {};
+    for (const [id, a] of Object.entries(DATA)) {
+      const i = setDayClamp(id, DATA[state.aid].day[state.i]), o = {};
+      for (const k of KEYS) {
+        let v = a["base_" + k] ? a["base_" + k][i] : null;
+        if (v == null) { const j = lastIdx(a[k], i, 30); v = j >= 0 ? a[k][j] : null; }
+        o[k] = v == null ? null : Math.round(v * 10) / 10;
+      }
+      astronauts[id] = o;
+    }
+    fetch(`${API}/live/context`, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ day: dayLabel(DATA[state.aid].day[state.i]), selected: state.aid, astronauts }) }).catch(() => {});
+  };
+  setInterval(poll, 1000);
+  poll();
+  return api;
+})();
 
 // ---------- navegación ----------
 const ROUTES = ["astronautas", "historial", "documentacion"];
@@ -1610,7 +1807,8 @@ function closeDrawer(focusBack = true) {
 function crewAlerts(d) {
   return Object.keys(DATA).map(id => {
     const a = DATA[id], j = a.day.indexOf(d);
-    return { id, sex: a.sex, st: j >= 0 ? a.status[j] : -1 };
+    const live = state.live && state.live.aid === id && state.live.overall != null;
+    return { id, sex: a.sex, st: live ? state.live.overall : j >= 0 ? a.status[j] : -1 };
   });
 }
 function renderCrewNav(d) {
@@ -1649,23 +1847,36 @@ function renderStrip(a, i) {
 }
 
 function renderStatus(a, i, states) {
-  const overall = a.status[i];
+  const L = state.live && state.live.aid === state.aid ? state.live : null;
+  const overall = L ? L.overall : a.status[i];
   const d = a.day[i];
   const flagged = ORDER.filter(k => states[k].st >= 1);
   const hasRed = ORDER.some(k => k !== "glucose" && states[k].st === 2);
   const heads = { 0: "Todo dentro de lo esperado", 1: "Atención: revisa tus registros", 2: "Alerta roja: actúa ahora" };
-  let reasons = flagged.map(k => `<li><i class="dot" data-st="${states[k].st}"></i><span><b>${IND[k].name}</b> · ${fmt(states[k].v, IND[k].nd)} ${IND[k].unit}. ${esc(reasonFor(k, states[k], d))}${k === "glucose" ? " No cuenta para el color general." : ""}</span></li>`);
+  let reasons = flagged.map(k => `<li><i class="dot" data-st="${states[k].st}"></i><span><b>${IND[k].name}</b> · ${fmt(states[k].v, IND[k].nd)} ${IND[k].unit}. ${esc(states[k].liveWhy || reasonFor(k, states[k], d))}${k === "glucose" ? " No cuenta para el color general." : ""}</span></li>`);
   if (overall === 2 && !hasRed) reasons.push(`<li><i class="dot" data-st="2"></i><span><b>Regla combinada</b> · dos indicadores en amarillo a la vez cuentan como rojo.</span></li>`);
   const flag = a.flags[i];
   if (flag === "spo2_missing_motion") reasons.push(`<li><i class="dot"></i><span>La lectura de SpO₂ de hoy se descartó por movimiento de la mano.</span></li>`);
   if (flag === "missing_day") reasons.push(`<li><i class="dot"></i><span>Día sin registros: no se tomaron mediciones.</span></li>`);
 
+  if (L) {
+    for (const k of ORDER) if (states[k].watch) reasons.push(`<li><i class="dot" data-st="w"></i><span><b>${IND[k].name}</b> · ${fmt(states[k].v, IND[k].nd)} ${IND[k].unit}. ${esc(states[k].liveWhy)}</span></li>`);
+    if (L.immune) reasons.push(`<li><i class="dot" data-st="${L.immune.st}"></i><span><b>Señales de defensas</b> · ${L.immune.n === 1 ? "1 señal" : L.immune.n + " señales"}. ${esc(L.immune.why)}</span></li>`);
+  }
+  if (L) {
+    const info = [["resp", "Respiración", "rpm"], ["light", "Luz recibida", "lux"]].filter(([k]) => L.values[k] != null);
+    if (info.length) reasons.push(`<li><i class="dot"></i><span>${info.map(([k, n, u]) => `<b>${n}</b> · ${fmt(L.values[k], 0)} ${u}`).join(" · ")}. Informativo: la app todavía no lo evalúa.</span></li>`);
+    if (L.ultrasound) reasons.push(`<li><i class="dot" data-st="${L.ultrasound.result === "hallazgo" ? 1 : L.ultrasound.result === "repetir" ? "w" : 0}"></i><span><b>Ecografía · ${ECHO_EXAM[L.ultrasound.exam]}</b>. ${ECHO_RES[L.ultrasound.result]} La app no interpreta la imagen.</span></li>`);
+  }
+  const anyWatch = !!L && (ORDER.some(k => states[k].watch) || (L.immune && L.immune.st === "w"));
   let guide = "";
   const act = flagged.filter(k => ACTIONS[k]);
-  if (act.length) {
+  const extra = L ? liveSteps(L, states) : [];
+  if (act.length || extra.length) {
     const steps = [];
     if (overall === 2 || hasRed) steps.push("<b>Avisa ahora al oficial médico de la tripulación.</b> Con hasta 20 minutos de retraso en las comunicaciones, no esperes respuesta de Tierra para dar los primeros pasos.");
     for (const k of act) for (const t of ACTIONS[k]) if (!steps.includes(t)) steps.push(t);
+    for (const t of extra) if (!steps.includes(t)) steps.push(t);
     steps.push("Registra la nueva medición en la consola para ver si el valor vuelve a tu banda.");
     guide = `<div class="guide"><h3>Guía de acción</h3><ol>${steps.map(t => `<li>${t}</li>`).join("")}</ol>
       <p class="note">Orientativa. No reemplaza el criterio del oficial médico.</p></div>`;
@@ -1675,7 +1886,9 @@ function renderStatus(a, i, states) {
   el.dataset.st = overall;
   el.innerHTML = `
     <div class="status-h"><span class="pill" data-st="${overall}"><i class="dot" data-st="${overall}"></i>${ST_WORD[overall]}</span>
-      <h2>${heads[overall]}</h2></div>
+      <h2>${overall === 0 && anyWatch ? "Vigila: repite estas mediciones" : heads[overall]}</h2></div>
+    ${L ? `<p class="livebar"><span><b>● Lectura en vivo</b> · recibida a las ${L.at} desde el simulador de sensores${L.scenario ? ` · escenario «${esc(L.scenario)}»` : ""}. Datos simulados.</span>
+      <button type="button" class="btn" id="liveOff">Volver a los datos de la misión</button></p>` : ""}
     <p class="context">${state.aid} · ${dayLabel(d)}. ${phaseText(a, i)}</p>
     ${reasons.length ? `<ul class="reasons">${reasons.join("")}</ul>` : ""}
     ${guide}`;
@@ -1704,7 +1917,7 @@ function renderList(a, i, states) {
   $("#indList").innerHTML = ORDER.map(k => {
     const s = states[k], m = IND[k];
     const band = s.lo != null ? (s.hi != null ? `banda ${fmt(s.lo, m.nd)}–${fmt(s.hi, m.nd)}` : `tu mínimo ${fmt(s.lo, m.nd)}`) : (a.day[i] >= 0 && a["lo_" + k] ? "sin banda aún" : "");
-    const when = s.v == null ? "sin lectura" : s.stale ? `de ${dayLabel(a.day[s.vi])}` : "hoy";
+    const when = s.v == null ? "sin lectura" : s.live ? "en vivo" : s.stale ? `de ${dayLabel(a.day[s.vi])}` : "hoy";
     return `<button type="button" class="ind ${k === state.sel ? "sel" : ""} ${zoneInds.includes(k) ? "zone-hl" : ""}" data-k="${k}" data-st="${s.st}" aria-pressed="${k === state.sel}">
       <span class="stripe"></span>
       <span><span class="nm">${m.name}</span><span class="meta"><span class="src">${m.src}</span>${band ? `<span>${band}</span>` : ""}${k === "glucose" ? "<span>semanal</span>" : ""}</span></span>
@@ -1885,6 +2098,12 @@ function bind() {
   $("#prevAlert").addEventListener("click", () => jump(-1));
   $("#nextAlert").addEventListener("click", () => jump(1));
   $("#liveBtn").addEventListener("click", () => Live.toggle());
+  $("#status").addEventListener("click", (e) => { if (e.target.closest("#liveOff")) { state.live = null; render(); } });
+  $("#focusGrid").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-k]"); if (!b) return;
+    state.sel = b.dataset.k; state.zone = IND[state.sel].zone; render();
+    document.querySelector(".trend").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  });
   $("#drawerCrew").addEventListener("click", (e) => {
     const l = e.target.closest("a[data-aid]"); if (!l) return;
     e.preventDefault();

@@ -4,11 +4,13 @@ from typing import Optional
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from models import HealthRecord, init_db, get_session, utcnow
 from thresholds import THRESHOLDS, evaluate, get_recommendation
+import live
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,6 +26,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Demo en vivo: el celular envía lecturas simuladas y la web las recoge.
+# /demo/ sirve el prototipo y /demo/control.html la página de control del celular.
+app.include_router(live.router)
+if live.PROTOTIPO_DIR.is_dir():
+    app.mount("/demo", StaticFiles(directory=live.PROTOTIPO_DIR, html=True), name="demo")
 
 
 @app.get("/indicators")

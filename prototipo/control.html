@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control de demo · Interstellar Signals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@300;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Página de control para el celular: hace de camisa, reloj y entradas manuales durante la demo.
+   Envía lecturas SIMULADAS al backend (/live); la web las recoge y las evalúa con el semáforo. */
+:root {
+  --bg: #0f1114; --surface: #14171c; --surface-2: #1a1e25; --ink: #f0dcc4; --muted: #a99c88; --line: #2d3440;
+  --accent: #7aa3cc; --accent-soft: #1b2a3a; --ok: #8fc79c; --warn: #f0b84f; --warn-soft: #3d2f12; --crit: #f0715a;
+  --shirt: #7aa3cc; --ring: #8fc79c; --watch: #c9a6e0; --manual: #f0dcc4; --echo: #f0b84f;
+  --f-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 560px; margin: 0 auto; display: grid; gap: 14px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) max(16px, env(safe-area-inset-right, 0px)) 150px max(16px, env(safe-area-inset-left, 0px)); }
+.eyebrow { font-family: var(--f-data); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 4px 0 0; font-family: var(--f-display); font-weight: 300; font-size: 30px; letter-spacing: .16em; text-transform: uppercase; line-height: 1.05; }
+.badge { display: inline-block; margin-top: 8px; font-family: var(--f-data); font-size: 11px; font-weight: 600; letter-spacing: .14em;
+  padding: 3px 8px; border: 1px dashed var(--warn); color: var(--warn); background: var(--warn-soft); border-radius: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-h h2 { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 21px; letter-spacing: .1em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+.card-h h2 i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+.card[data-src="shirt"] { --c: var(--shirt); border-top: 3px solid var(--shirt); }
+.card[data-src="ring"] { --c: var(--ring); border-top: 3px solid var(--ring); }
+.card[data-src="echo"] { --c: var(--echo); border-top: 3px solid var(--echo); }
+.card[data-src="watch"] { --c: var(--watch); border-top: 3px solid var(--watch); }
+.card[data-src="manual"] { --c: var(--manual); border-top: 3px solid var(--manual); }
+.card p.note { margin: 0; font-size: 12.5px; color: var(--muted); }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-data); font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.switch input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface-2); padding: 12px 8px; font-family: var(--f-data); font-size: 15px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 600; }
+.scen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.scen button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 2px; padding: 12px 10px; text-align: left; cursor: pointer; display: grid; gap: 2px; min-height: 58px; }
+.scen button b { font-weight: 600; font-size: 14px; }
+.scen button small { font-size: 11.5px; color: var(--muted); }
+.scen button:active, .scen button.on { border-color: var(--accent); background: var(--accent-soft); }
+.field { display: grid; gap: 4px; }
+.field-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.field-h label { font-weight: 600; font-size: 14px; }
+.field-h output { font-family: var(--f-data); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.field-h output small { font-size: 11px; font-weight: 400; color: var(--muted); }
+.field-f { display: flex; justify-content: space-between; font-family: var(--f-data); font-size: 10.5px; color: var(--muted); }
+input[type="range"] { width: 100%; margin: 0; height: 34px; accent-color: var(--c, var(--accent)); }
+.card.off .fields { opacity: .35; pointer-events: none; }
+.fields { display: grid; gap: 14px; }
+.checks { display: grid; gap: 10px; }
+.checks label { display: flex; gap: 10px; align-items: center; font-size: 14px; cursor: pointer; }
+.checks input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); flex: none; }
+.sub { border-top: 1px dashed var(--line); padding-top: 12px; display: grid; gap: 12px; }
+.sub.off .field { opacity: .35; pointer-events: none; }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bg); border-top: 1px solid var(--line);
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 10px) max(16px, env(safe-area-inset-left, 0px)); }
+.bar-in { max-width: 560px; margin: 0 auto; display: grid; gap: 8px; }
+.bar-row { display: flex; gap: 8px; align-items: center; }
+.send { flex: 1; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); border-radius: 2px; padding: 14px; font-family: var(--f-data); font-size: 14px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.send:active { background: var(--accent); border-color: var(--accent); }
+.ghost { border: 1px solid var(--line); background: var(--surface-2); border-radius: 2px; padding: 14px 12px; font-family: var(--f-data); font-size: 12px; cursor: pointer; white-space: nowrap; }
+.stat { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-family: var(--f-data); font-size: 11.5px; color: var(--muted); }
+.stat b { font-weight: 500; }
+.stat[data-s="ok"] b { color: var(--ok); } .stat[data-s="err"] b { color: var(--crit); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Interstellar Signals · control de demo</div>
+    <h1>Simulador de sensores</h1>
+    <span class="badge">DATOS SIMULADOS · NO SON SENSORES REALES</span>
+  </header>
+
+  <section class="card" aria-label="Astronauta">
+    <div class="card-h"><span class="eyebrow">¿De quién son las lecturas?</span><span class="eyebrow" id="ctxDay"></span></div>
+    <div class="seg" id="who"></div>
+  </section>
+
+  <section class="card" aria-label="Escenarios">
+    <div class="card-h"><span class="eyebrow">Escenarios · ajustan y envían de una vez</span></div>
+    <div class="scen" id="scen"></div>
+  </section>
+
+  <section class="card" data-src="shirt" data-group="shirt">
+    <div class="card-h"><h2><i></i>Camisa</h2><label class="switch"><input type="checkbox" data-on="shirt" checked> enviar</label></div>
+    <p class="note">Lo que la camisa mide de forma continua. La presión no va aquí: la camisa solo la estima. La respiración es informativa.</p>
+    <div class="fields" data-fields="shirt"></div>
+  </section>
+
+  <section class="card" data-src="ring" data-group="ring">
+    <div class="card-h"><h2><i></i>Anillo</h2><label class="switch"><input type="checkbox" data-on="ring" checked> enviar</label></div>
+    <p class="note">Oxímetro en el dedo: mide la saturación de oxígeno.</p>
+    <div class="fields" data-fields="ring"></div>
+  </section>
+
+  <section class="card" data-src="watch" data-group="watch">
+    <div class="card-h"><h2><i></i>Reloj</h2><label class="switch"><input type="checkbox" data-on="watch" checked> enviar</label></div>
+    <p class="note">Sueño por actigrafía y exposición a la luz. La luz es informativa: la app todavía no la evalúa.</p>
+    <div class="fields" data-fields="watch"></div>
+  </section>
+
+  <section class="card" data-src="manual" data-group="manual">
+    <div class="card-h"><h2><i></i>Manual</h2><label class="switch"><input type="checkbox" data-on="manual" checked> enviar</label></div>
+    <p class="note">Lo que el astronauta escribe en su chequeo: presión con manguito, ánimo y ejercicio.</p>
+    <div class="fields" data-fields="manual">
+      <div class="sub off" id="gluSub">
+        <label class="switch"><input type="checkbox" id="gluOn"> incluir glucosa en ayunas (semanal)</label>
+        <div data-fields="glucose"></div>
+      </div>
+      <div class="sub">
+        <span class="eyebrow">Señales de defensas</span>
+        <div class="checks" id="sx">
+          <label><input type="checkbox" value="piel"> Erupción o lesión nueva en la piel</label>
+          <label><input type="checkbox" value="boca"> Llagas en la boca o los labios</label>
+          <label><input type="checkbox" value="resp"> Congestión, tos o dolor de garganta</label>
+          <label><input type="checkbox" value="herida"> Una herida que tarda en cerrar</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card off" data-src="echo" data-group="echo">
+    <div class="card-h"><h2><i></i>Ultrasound 2</h2><label class="switch"><input type="checkbox" data-on="echo"> enviar</label></div>
+    <p class="note">No vigila a diario: se usa cuando hay rojo. La app no interpreta la imagen; registra lo que anota quien hace la ecografía.</p>
+    <div class="fields">
+      <div class="field"><span class="eyebrow">Qué se examinó</span>
+        <div class="seg" id="echoExam"><button type="button" data-v="corazon" aria-pressed="true">Corazón</button><button type="button" data-v="vasos" aria-pressed="false">Vasos</button><button type="button" data-v="abdomen" aria-pressed="false">Abdomen</button><button type="button" data-v="ojo" aria-pressed="false">Ojo</button></div></div>
+      <div class="field"><span class="eyebrow">Resultado anotado</span>
+        <div class="seg" id="echoRes"><button type="button" data-v="sin_hallazgos" aria-pressed="true">Sin hallazgos</button><button type="button" data-v="hallazgo" aria-pressed="false">Hallazgo</button><button type="button" data-v="repetir" aria-pressed="false">Repetir</button></div></div>
+    </div>
+  </section>
+</div>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="stat" id="stat" data-s=""><b id="statMsg">Conectando…</b><label class="switch"><input type="checkbox" id="auto"> enviar al mover</label></div>
+    <div class="bar-row">
+      <button class="send" id="send" type="button">Enviar lectura</button>
+      <button class="ghost" id="clear" type="button" title="La web vuelve a mostrar los datos simulados de la misión">Quitar lectura</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// La página se sirve desde el backend (/demo/control.html), así que la API está en el mismo origen.
+// Para abrirla desde otro sitio: control.html?api=http://IP-DEL-PC:8000
+const API = (new URLSearchParams(location.search).get("api") || location.origin).replace(/\/$/, "");
+const $ = (s) => document.querySelector(s);
+
+const FIELDS = {
+  hr_rest:  { g: "shirt",   name: "Frecuencia cardíaca en reposo", unit: "lpm",   min: 35,  max: 160, step: 1,   def: 68,   nd: 0 },
+  resp:     { g: "shirt",   name: "Frecuencia respiratoria",       unit: "rpm",   min: 6,   max: 40,  step: 1,   def: 15,   nd: 0 },
+  temp:     { g: "shirt",   name: "Temperatura",                   unit: "°C",    min: 35,  max: 40,  step: 0.1, def: 36.8, nd: 1 },
+  spo2:     { g: "ring",    name: "Saturación de oxígeno",         unit: "%",     min: 80,  max: 100, step: 1,   def: 97,   nd: 0 },
+  sleep:    { g: "watch",   name: "Sueño de anoche",               unit: "h",     min: 0,   max: 12,  step: 0.1, def: 6.5,  nd: 1 },
+  light:    { g: "watch",   name: "Luz recibida hoy",              unit: "lux",   min: 0,   max: 2000, step: 10, def: 300,  nd: 0 },
+  bp_sys:   { g: "manual",  name: "Presión sistólica",             unit: "mmHg",  min: 70,  max: 220, step: 1,   def: 118,  nd: 0 },
+  bp_dia:   { g: "manual",  name: "Presión diastólica",            unit: "mmHg",  min: 40,  max: 140, step: 1,   def: 62,   nd: 0 },
+  mood:     { g: "manual",  name: "Ánimo",                         unit: "/ 5",   min: 1,   max: 5,   step: 0.5, def: 4,    nd: 1 },
+  exercise: { g: "manual",  name: "Ejercicio de hoy",              unit: "min",   min: 0,   max: 180, step: 5,   def: 90,   nd: 0 },
+  glucose:  { g: "glucose", name: "Glucosa en ayunas",             unit: "mg/dL", min: 40,  max: 200, step: 1,   def: 90,   nd: 0 },
+};
+// Escenarios: parten de la línea base del astronauta y cambian solo lo que se indica.
+const SCEN = [
+  { id: "normal",   name: "Todo normal",          hint: "valores en su línea base", set: {} },
+  { id: "bp",       name: "Presión muy alta",     hint: "186 / 122 mmHg",           set: { bp_sys: 186, bp_dia: 122 } },
+  { id: "hr",       name: "Corazón acelerado",    hint: "112 lpm en reposo",        set: { hr_rest: 112 } },
+  { id: "spo2",     name: "Oxígeno bajo",         hint: "SpO₂ 88 %",                set: { spo2: 88 } },
+  { id: "fever",    name: "Fiebre con síntomas",  hint: "38,7 °C y congestión",     set: { temp: 38.7 }, sx: ["resp"] },
+  { id: "mind",     name: "Mala noche y ánimo bajo", hint: "3,5 h de sueño · ánimo 1,5", set: { sleep: 3.5, mood: 1.5 } },
+  { id: "skin",     name: "Señales en la piel",   hint: "erupción y llagas",        set: {}, sx: ["piel", "boca"] },
+  { id: "lazy",     name: "Sin ejercicio",        hint: "0 minutos hoy",            set: { exercise: 0 } },
+];
+
+let ctx = null, who = null;
+const fmt = (v, nd) => Number(v).toLocaleString("es-CO", { minimumFractionDigits: nd, maximumFractionDigits: nd });
+
+for (const [k, F] of Object.entries(FIELDS)) {
+  document.querySelector(`[data-fields="${F.g}"]`).insertAdjacentHTML(F.g === "manual" ? "afterbegin" : "beforeend", `
+    <div class="field">
+      <div class="field-h"><label for="r-${k}">${F.name}</label><output id="o-${k}"></output></div>
+      <input type="range" id="r-${k}" min="${F.min}" max="${F.max}" step="${F.step}" value="${F.def}">
+      <div class="field-f"><span>${fmt(F.min, 0)}</span><span id="b-${k}"></span><span>${fmt(F.max, 0)}</span></div>
+    </div>`);
+}
+// el orden natural del bloque manual: sistólica, diastólica, ánimo, ejercicio
+{ const box = document.querySelector('[data-fields="manual"]'); for (const k of ["exercise", "mood", "bp_dia", "bp_sys"]) box.prepend($("#r-" + k).closest(".field")); }
+
+function paint(k) { const F = FIELDS[k]; $("#o-" + k).innerHTML = `${fmt($("#r-" + k).value, F.nd)} <small>${F.unit}</small>`; }
+function setVal(k, v) { const F = FIELDS[k]; $("#r-" + k).value = Math.min(F.max, Math.max(F.min, v)); paint(k); }
+function baseOf(k) { const b = ctx && who && ctx.astronauts[who] ? ctx.astronauts[who][k] : null; return b == null ? FIELDS[k].def : b; }
+function toBase() {
+  for (const k of Object.keys(FIELDS)) {
+    setVal(k, baseOf(k));
+    const b = ctx && who && ctx.astronauts[who] ? ctx.astronauts[who][k] : null;
+    $("#b-" + k).textContent = b == null ? "" : `su línea base: ${fmt(b, FIELDS[k].nd)}`;
+  }
+  document.querySelectorAll("#sx input").forEach(c => { c.checked = false; });
+}
+function paintWho() {
+  const names = ctx && Object.keys(ctx.astronauts).length ? Object.keys(ctx.astronauts) : ["Zamar", "Carlos"];
+  if (!who || !names.includes(who)) who = (ctx && names.includes(ctx.selected)) ? ctx.selected : names[0];
+  $("#who").innerHTML = names.map(n => `<button type="button" data-n="${n}" aria-pressed="${n === who}">${n}</button>`).join("");
+  $("#ctxDay").textContent = ctx && ctx.day ? `la web está en ${ctx.day}` : "";
+}
+
+function status(kind, msg) { $("#stat").dataset.s = kind; $("#statMsg").textContent = msg; }
+const hhmmss = () => new Date().toLocaleTimeString("es-CO", { hour12: false });
+
+async function loadCtx(first) {
+  try {
+    const r = await fetch(API + "/live/context");
+    if (!r.ok) throw new Error(r.status);
+    const c = await r.json();
+    const changed = JSON.stringify(c) !== JSON.stringify(ctx);
+    ctx = c;
+    if (first || changed) { paintWho(); if (first) toBase(); else for (const k of Object.keys(FIELDS)) { const b = ctx && ctx.astronauts[who] ? ctx.astronauts[who][k] : null; $("#b-" + k).textContent = b == null ? "" : `su línea base: ${fmt(b, FIELDS[k].nd)}`; } }
+    if (first) status("ok", ctx ? "Conectado con la web" : "Conectado · abre la web en el PC");
+  } catch (e) { if (first) { paintWho(); toBase(); } status("err", "Sin conexión con el backend"); }
+}
+
+function payload(scenario) {
+  const on = (g) => document.querySelector(`[data-on="${g}"]`).checked;
+  const values = {};
+  for (const [k, F] of Object.entries(FIELDS)) {
+    if (F.g === "glucose" ? on("manual") && $("#gluOn").checked : on(F.g)) values[k] = Number($("#r-" + k).value);
+  }
+  const symptoms = on("manual") ? [...document.querySelectorAll("#sx input:checked")].map(c => c.value) : [];
+  const pressed = (id) => document.querySelector(`#${id} [aria-pressed="true"]`).dataset.v;
+  const ultrasound = on("echo") ? { exam: pressed("echoExam"), result: pressed("echoRes") } : null;
+  return { astronaut: who, values, symptoms, scenario: scenario || null, ultrasound };
+}
+async function send(scenario) {
+  const body = payload(scenario);
+  if (!Object.keys(body.values).length && !body.symptoms.length && !body.ultrasound) { status("err", "Activa al menos un apartado"); return; }
+  try {
+    const r = await fetch(API + "/live", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error((await r.json()).detail || r.status);
+    const j = await r.json();
+    status("ok", `Enviado a las ${hhmmss()} · lectura n.º ${j.seq}`);
+  } catch (e) { status("err", `No se envió: ${e.message}`); }
+}
+
+let autoT = 0;
+document.addEventListener("input", (e) => {
+  if (e.target.matches('input[type="range"]')) paint(e.target.id.slice(2));
+  if (e.target.matches("[data-on]")) e.target.closest(".card").classList.toggle("off", !e.target.checked);
+  if (e.target.id === "gluOn") $("#gluSub").classList.toggle("off", !e.target.checked);
+  if ($("#auto").checked && e.target.id !== "auto") { clearTimeout(autoT); autoT = setTimeout(() => send(), 250); }
+  document.querySelectorAll("#scen .on").forEach(b => b.classList.remove("on"));
+});
+$("#who").addEventListener("click", (e) => { const b = e.target.closest("button[data-n]"); if (!b) return; who = b.dataset.n; paintWho(); toBase(); });
+$("#scen").innerHTML = SCEN.map(s => `<button type="button" data-s="${s.id}"><b>${s.name}</b><small>${s.hint}</small></button>`).join("");
+$("#scen").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-s]"); if (!b) return;
+  const s = SCEN.find(x => x.id === b.dataset.s);
+  toBase();
+  for (const [k, v] of Object.entries(s.set)) setVal(k, v);
+  for (const v of s.sx || []) document.querySelector(`#sx input[value="${v}"]`).checked = true;
+  // un escenario envía todos los apartados, para que la web muestre el cuadro completo
+  document.querySelectorAll("[data-on]").forEach(c => { c.checked = c.dataset.on !== "echo"; c.closest(".card").classList.toggle("off", !c.checked); });
+  document.querySelectorAll("#scen .on").forEach(x => x.classList.remove("on")); b.classList.add("on");
+  send(s.name);
+});
+for (const id of ["echoExam", "echoRes"]) $("#" + id).addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-v]"); if (!b) return;
+  $("#" + id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  if ($("#auto").checked) send();
+});
+$("#send").addEventListener("click", () => send());
+$("#clear").addEventListener("click", async () => {
+  try { const r = await fetch(API + "/live", { method: "DELETE" }); if (!r.ok) throw new Error(r.status); status("ok", `La web volvió a los datos de la misión · ${hhmmss()}`); }
+  catch (e) { status("err", "No se pudo quitar la lectura"); }
+});
+
+for (const k of Object.keys(FIELDS)) paint(k);
+loadCtx(true);
+setInterval(() => loadCtx(false), 4000);
+</script>
+</body>
+</html>
