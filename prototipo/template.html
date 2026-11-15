@@ -799,6 +799,8 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script>
 const DATA = __DATA__;
+// malla del cuerpo 3D: base de MakeHuman (CC0), generada por build_body.py
+const BODY = __BODY__;
 const START = { aid: "Carlos", day: 31, sel: "bp_sys" };
 
 const ORDER = ["hr_rest", "bp_sys", "bp_dia", "spo2", "temp", "glucose", "sleep", "mood", "exercise", "fitness"];
@@ -1058,11 +1060,10 @@ function render() {
 
 // ---------- figura 3D (Three.js) ----------
 const Holo3D = (() => {
-  const POS = {
-    head: [0, 1.75, 0.075, 0.34], temp: [0, 1.625, 0.085, 0.14], heart: [0.05, 1.3, 0.115, 0.3],
-    arm: [0.25, 1.29, 0.03, 0.22], abdomen: [0, 1.07, 0.09, 0.36], hand: [-0.49, 0.88, 0.05, 0.18], leg: [-0.1, 0.72, 0.085, 0.36],
-  };
-  const LSIDE = { head: "L", temp: "R", heart: "L", arm: "R", abdomen: "R", hand: "L", leg: "L" };
+  // [x, y, z, radio del brillo]: el punto se calcula sobre la superficie de la malla (build_body.py)
+  const RAD = { head: 0.34, temp: 0.14, heart: 0.3, arm: 0.22, abdomen: 0.36, hand: 0.18, leg: 0.36 };
+  const POS = Object.fromEntries(Object.entries(BODY.anchors).map(([z, a]) => [z, [...a, RAD[z]]]));
+  const LSIDE = { head: "L", temp: "R", heart: "R", arm: "R", abdomen: "L", hand: "L", leg: "L" };
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const api = { ok: false, active: false, update() {}, start() {}, stop() {} };
   if (!window.THREE) return api;
@@ -1077,110 +1078,51 @@ const Holo3D = (() => {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 472 / 524, 0.1, 20);
-  camera.position.set(0, 1.05, 3.95);
+  camera.position.set(0, 1.0, 4.25);
   camera.lookAt(0, 0.9, 0);
   const root = new THREE.Group();
   scene.add(root);
 
   const edge = new THREE.Color(cssVar("--holo-edge")), core = new THREE.Color(cssVar("--holo-core"));
-  // Material del cuerpo: sólido sombreado (luz fija arriba a la izquierda, para dar volumen) con la malla de
-  // anillos y meridianos dibujada encima en crema. uv.x cuenta meridianos y uv.y anillos.
+  // Cuerpo: malla base humana de MakeHuman (CC0), 13 378 caras de cuatro lados en pose «A».
+  // Se dibuja como sólido sombreado (luz fija arriba a la izquierda) y, encima, el alambre de los cuadros originales.
   const holo = new THREE.ShaderMaterial({
     uniforms: { uEdge: { value: edge }, uCore: { value: core }, uTime: { value: 0 } },
-    extensions: { derivatives: true },
-    vertexShader: `varying vec3 vN; varying vec3 vV; varying vec2 vG;
-      void main() { vG = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); vN = normalize(normalMatrix * normal);
+    vertexShader: `varying vec3 vN; varying vec3 vV;
+      void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); vN = normalize(normalMatrix * normal);
         gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform vec3 uEdge; uniform vec3 uCore; varying vec3 vN; varying vec3 vV; varying vec2 vG;
-      float gridLine(float v) { float w = fwidth(v); float d = min(fract(v), 1.0 - fract(v));
-        return (1.0 - smoothstep(0.0, 1.3 * w, d)) * (1.0 - smoothstep(0.25, 0.5, w)); }
+    fragmentShader: `uniform vec3 uEdge; uniform vec3 uCore; varying vec3 vN; varying vec3 vV;
       void main() { vec3 n = normalize(vN);
         float diff = max(dot(n, normalize(vec3(-0.45, 0.55, 0.7))), 0.0);
-        float shade = 0.16 + 0.84 * pow(diff, 1.15);
+        float shade = 0.14 + 0.86 * pow(diff, 1.15);
         float f = pow(1.0 - abs(dot(n, normalize(vV))), 2.6);
-        float g = max(gridLine(vG.x), gridLine(vG.y));
         vec3 c = mix(vec3(0.035, 0.085, 0.15), uCore, shade);
-        c = mix(c, uEdge, g * (0.35 + 0.5 * shade));
         gl_FragColor = vec4(c + uEdge * f * 0.45, 1.0); }`,
+    polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, // deja el alambre por delante sin parpadeo
   });
-  const RINGS = 26; // anillos por unidad de altura
-  const setGrid = (geo, meridians) => {
-    const uv = geo.attributes.uv, pos = geo.attributes.position;
-    for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) * meridians, pos.getY(k) * RINGS);
-    return geo;
-  };
-  const add = (geo, pos, scl, quat) => {
-    const m = new THREE.Mesh(geo, holo); m.position.set(...pos); if (scl) m.scale.set(...scl); if (quat) m.quaternion.copy(quat);
-    root.add(m); return m;
-  };
-  // sólido de revolución suave a partir de puntos de control [y, radio]
-  const lathe = (ctrl, meridians, seg = 40) => {
-    const curve = new THREE.SplineCurve(ctrl.map(([y, r]) => new THREE.Vector2(r, y)));
-    const pts = curve.getPoints(48).map(v => new THREE.Vector2(Math.max(0.0005, v.x), v.y));
-    return setGrid(new THREE.LatheGeometry(pts, seg), meridians);
-  };
-  // Piel por secciones: cada estación es [y, ancho, fondo delante, fondo detrás, desplazamiento z].
-  // Permite pecho, espalda, glúteos y mandíbula distintos por delante y por detrás.
-  const loft = (st, meridians, segA = 48, segY = 72) => {
-    const cs = [1, 2, 3, 4].map(q => new THREE.SplineCurve(st.map(v => new THREE.Vector2(v[0], v[q]))));
-    const pos = [], uv = [], idx = [];
-    for (let iy = 0; iy <= segY; iy++) {
-      const pt = cs.map(c => c.getPoint(iy / segY));
-      const y = pt[0].x, rx = Math.max(0.001, pt[0].y), rf = Math.max(0.001, pt[1].y), rb = Math.max(0.001, pt[2].y), zc = pt[3].y;
-      for (let ia = 0; ia <= segA; ia++) {
-        const a = Math.PI + (ia / segA) * 2 * Math.PI, sn = Math.sin(a), cn = Math.cos(a); // costura en la espalda
-        pos.push(rx * sn, y, zc + (cn > 0 ? rf : rb) * cn); uv.push((ia / segA) * meridians, y * RINGS);
-      }
+  {
+    const bin = (b64) => Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+    const q16 = new Int16Array(bin(BODY.pos)), quad = new Uint16Array(bin(BODY.quad));
+    const pos = new Float32Array(q16.length);
+    for (let k = 0; k < q16.length; k++) { const a = k % 3; pos[k] = BODY.lo[a] + (q16[k] + 32768) / 65535 * (BODY.hi[a] - BODY.lo[a]); }
+    // sólido: dos triángulos por cuadro
+    const tri = new Uint16Array(BODY.nq * 6);
+    for (let f = 0; f < BODY.nq; f++) { const [a, b, c, d] = quad.subarray(f * 4, f * 4 + 4); tri.set([a, b, c, a, c, d], f * 6); }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setIndex(new THREE.BufferAttribute(tri, 1));
+    geo.computeVertexNormals();
+    root.add(new THREE.Mesh(geo, holo));
+    // alambre: solo los lados de los cuadros (sin diagonales), cada arista una sola vez
+    const seen = new Set(), seg = [];
+    for (let f = 0; f < BODY.nq; f++) for (let e = 0; e < 4; e++) {
+      const a = quad[f * 4 + e], b = quad[f * 4 + (e + 1) % 4], key = a < b ? a * 65536 + b : b * 65536 + a;
+      if (!seen.has(key)) { seen.add(key); seg.push(a, b); }
     }
-    for (let iy = 0; iy < segY; iy++) for (let ia = 0; ia < segA; ia++) {
-      const a = iy * (segA + 1) + ia, b = a + 1, c = a + segA + 1, d = c + 1;
-      idx.push(a, b, c, b, d, c);
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-    g.setIndex(idx); g.computeVertexNormals();
-    const nr = g.attributes.normal; // une las normales de la costura para que no se note
-    for (let iy = 0; iy <= segY; iy++) {
-      const a = iy * (segA + 1), b = a + segA;
-      const v = new THREE.Vector3(nr.getX(a) + nr.getX(b), nr.getY(a) + nr.getY(b), nr.getZ(a) + nr.getZ(b)).normalize();
-      nr.setXYZ(a, v.x, v.y, v.z); nr.setXYZ(b, v.x, v.y, v.z);
-    }
-    return g;
-  };
-  const UP = new THREE.Vector3(0, 1, 0);
-  // extremidad ahusada de A a B: radios [t de 0 a 1, radio], con extremos redondeados; scl aplana la sección
-  const limb = (a, b, radii, meridians = 12, scl = null) => {
-    const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), dir = B.clone().sub(A), len = dir.length();
-    const r0 = radii[0][1], r1 = radii[radii.length - 1][1], h = len / 2;
-    const ctrl = [[-h - r0, 0], [-h - r0 * 0.72, r0 * 0.68], ...radii.map(([t, r]) => [-h + t * len, r]), [h + r1 * 0.72, r1 * 0.68], [h + r1, 0]];
-    add(lathe(ctrl, meridians, 32), A.clone().add(B).multiplyScalar(0.5).toArray(), scl, new THREE.Quaternion().setFromUnitVectors(UP, dir.normalize()));
-  };
-  const ball = (r, meridians) => setGrid(new THREE.SphereGeometry(r, 36, 26), meridians);
-
-  // cabeza: cráneo ancho arriba que se afina hacia la mandíbula y el mentón
-  add(loft([[1.585, 0.012, 0.012, 0.012, 0.03], [1.6, 0.04, 0.045, 0.03, 0.022], [1.635, 0.058, 0.07, 0.055, 0.015], [1.68, 0.07, 0.082, 0.078, 0.008],
-    [1.73, 0.077, 0.088, 0.09, 0.002], [1.775, 0.072, 0.08, 0.086, 0], [1.81, 0.05, 0.055, 0.062, 0], [1.826, 0.012, 0.012, 0.012, 0]], 14, 40, 40), [0, 0, 0]);
-  // torso de una pieza: pelvis y glúteos, cintura, pecho, hombros, trapecio y cuello
-  add(loft([[0.8, 0.015, 0.015, 0.015, 0], [0.83, 0.095, 0.07, 0.085, 0], [0.9, 0.158, 0.088, 0.112, 0], [0.98, 0.162, 0.086, 0.104, 0],
-    [1.08, 0.136, 0.082, 0.078, 0.004], [1.18, 0.146, 0.092, 0.084, 0.008], [1.28, 0.168, 0.11, 0.094, 0.01], [1.36, 0.18, 0.106, 0.1, 0.006],
-    [1.42, 0.176, 0.085, 0.094, 0], [1.47, 0.115, 0.062, 0.074, -0.004], [1.52, 0.058, 0.052, 0.058, -0.004], [1.58, 0.048, 0.05, 0.052, 0], [1.65, 0.046, 0.048, 0.05, 0.004]], 20), [0, 0, 0]);
-  for (const sd of [-1, 1]) {
-    const sh = [0.185 * sd, 1.41, 0], el = [0.33 * sd, 1.16, -0.005], wr = [0.455 * sd, 0.945, 0.03];
-    add(ball(0.064, 8), [0.19 * sd, 1.405, 0], [1, 1.05, 0.95]);                                    // deltoides
-    limb(sh, el, [[0, 0.058], [0.35, 0.054], [0.75, 0.045], [1, 0.04]], 8);                           // brazo
-    limb(el, wr, [[0, 0.04], [0.25, 0.044], [0.7, 0.032], [1, 0.026]], 8, [1, 1, 0.9]);                // antebrazo
-    const armDir = new THREE.Vector3(wr[0] - el[0], wr[1] - el[1], wr[2] - el[2]).normalize();
-    const q = new THREE.Quaternion().setFromUnitVectors(UP, armDir.clone().negate());
-    const at = (d, dx = 0, dz = 0) => [wr[0] + armDir.x * d + dx, wr[1] + armDir.y * d, wr[2] + armDir.z * d + dz];
-    add(ball(0.05, 8), at(0.055), [0.72, 1.1, 0.36], q);                                              // palma
-    add(ball(0.05, 8), at(0.125), [0.6, 1.0, 0.26], q);                                               // dedos
-    add(ball(0.03, 6), at(0.06, 0, 0.035), [0.5, 1.3, 0.5], q);                                       // pulgar
-    limb([0.088 * sd, 0.92, 0], [0.115 * sd, 0.5, 0.012], [[0, 0.088], [0.3, 0.084], [0.75, 0.062], [1, 0.052]], 10); // muslo
-    add(ball(0.052, 8), [0.115 * sd, 0.5, 0.022], [1, 1.1, 0.95]);                                    // rodilla
-    limb([0.115 * sd, 0.5, 0.005], [0.135 * sd, 0.1, 0], [[0, 0.05], [0.28, 0.06], [0.7, 0.04], [1, 0.032]], 10); // pantorrilla
-    add(ball(0.04, 8), [0.136 * sd, 0.05, -0.012], [0.9, 1.15, 1.1]);                                 // talón
-    add(ball(0.05, 8), [0.14 * sd, 0.034, 0.075], [0.82, 0.62, 2.1]);                                 // pie
+    const wgeo = new THREE.BufferGeometry();
+    wgeo.setAttribute("position", geo.attributes.position);
+    wgeo.setIndex(seg);
+    root.add(new THREE.LineSegments(wgeo, new THREE.LineBasicMaterial({ color: edge, transparent: true, opacity: 0.42, depthWrite: false })));
   }
   // suelo: rejilla deformada en pozo gravitatorio bajo la figura, con órbitas que siguen la curva
   const well = (x, z) => -0.32 * Math.exp(-(x * x + z * z) / 0.16);
