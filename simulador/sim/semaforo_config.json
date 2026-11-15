@@ -1,0 +1,69 @@
+{
+  "_readme": "Parametros del semaforo (verde, amarillo, rojo). Cada parametro es [valor, estado, fuente]. NASA no publica criterios numericos de alarma: todo lo que dice 'supuesto' es decision del equipo y se puede cambiar aqui sin tocar el codigo. Los limites rojos absolutos salen de referencias clinicas de la Tierra, no de astronautas. v0.2 (14 nov 2026): recalibracion tras la evaluacion; ver _changelog_v02.",
+  "_changelog_v02": ["Temperatura: 38,0 C (fiebre oral en Tierra) solo en los primeros 14 dias de vuelo; despues, solo linea base personal (temp_gt_inflight = null). DECIDIDO 14 nov 2026.", "Linea base: 28 dias, sin sacar dias marcados (salvo saltos), con banda de prediccion.", "Banda 2,5 DE; salto 4 DE con confirmacion al dia siguiente.", "Limites inferiores en amarillo: FC < 50 (ACC/AHA/HRS 2018); PA sistolica < 90 opcional y apagada (ESC 2018, sin verificar).", "Ejercicio: amarillo con menos de 3 sesiones en 7 dias.", "Todo lo que dice 'supuesto' es PROVISIONAL hasta que el equipo decida con out/evaluation/tradeoff_table.csv.", "Glucosa (fuera del semaforo minimo): amarillo >= 100 y rojo >= 126 mg/dl en ayunas (ADA 2026)."],
+  "_changelog_v03": ["Temperatura: rojo fijo en vuelo = 38,5 C (supuesto del equipo) despues de los primeros 14 dias; antes no habia limite absoluto y dos de cuatro astronautas simulados quedaban en verde con >= 38,0 C el 87-94 % de los dias. En sim_params.json la meseta individual de reposo se recorta en 38,0 C (temp.plateau_max_c, supuesto)."],
+  "general": {
+    "baseline_window_days": [28, "supuesto", "v0.2: ventana movil de 28 dias (con 14, la DE estimada con pocos puntos daba colas ~5 veces mas gruesas que una normal y muchas falsas alarmas). Eleccion del equipo, sin fuente"],
+    "min_window_points": [14, "supuesto", "lecturas validas minimas en la ventana para calcular la banda"],
+    "baseline_stat": ["mean_sd", "supuesto", "mean_sd = media y DE; median_mad = mediana y MAD (probada: con 14-28 puntos fue peor)"],
+    "prediction_interval": [1, "supuesto", "1 = la DE se multiplica por raiz(1 + 1/n): banda de prediccion de una lectura nueva, no de la media"],
+    "band_sd": [2.5, "supuesto", "v0.2: ancho de la banda personal en DE (antes 2,0). PROVISIONAL, ver tradeoff_table.csv"],
+    "consecutive_days_yellow": [3, "supuesto", "lecturas seguidas fuera de la banda para amarillo"],
+    "jump_sd": [4.0, "supuesto", "v0.2: cambio de golpe en un dia, en DE (antes 3,0). Solo da rojo si se confirma (jump_confirm). PROVISIONAL"],
+    "jump_confirm": [1, "supuesto", "1 = el salto pasa a rojo solo si la lectura siguiente sigue fuera de la banda en la misma direccion (evita rojos por artefactos de un dia)"],
+    "jump_unconfirmed_yellow": [0, "supuesto", "1 = el dia del salto sin confirmar da amarillo; 0 = no alerta todavia"],
+    "two_yellow_to_red": [1, "supuesto", "1 = dos indicadores en amarillo a la vez dan rojo"],
+    "exclude_flagged_from_baseline": [0, "supuesto", "v0.2: 0 = todo entra a la linea base salvo las lecturas con salto; 1 = dias en amarillo o rojo no entran; 2 = solo los rojos no entran. Con 1, sacar los dias raros recortaba la DE y la banda se cerraba sola (mas alarmas) y en derivas lentas la linea base se congelaba. Costo: un deterioro MUY lento puede quedar absorbido por la linea base"],
+    "absolute_only_first_days": [14, "supuesto", "primeros dias de vuelo: solo cuentan los limites rojos absolutos"]
+  },
+  "sd_floor": {
+    "hr_rest": [2.0, "supuesto", "DE minima de la banda (lpm) para que una racha sin variacion no cierre la banda"],
+    "bp_sys": [3.0, "supuesto", "DE minima (mmHg)"],
+    "bp_dia": [3.0, "supuesto", "DE minima (mmHg)"],
+    "spo2": [0.5, "supuesto", "DE minima (puntos)"],
+    "temp": [0.15, "supuesto", "DE minima (C)"],
+    "glucose": [3.0, "supuesto", "DE minima (mg/dl)"],
+    "sleep": [0.3, "supuesto", "DE minima (h)"],
+    "mood": [0.2, "supuesto", "DE minima (puntos)"]
+  },
+  "direction": {
+    "hr_rest": ["both", "supuesto", "alarma si sube o baja"],
+    "bp_sys": ["both", "supuesto", "alarma si sube o baja"],
+    "bp_dia": ["both", "supuesto", "alarma si sube o baja"],
+    "spo2": ["low", "supuesto", "solo cuando baja"],
+    "temp": ["both", "supuesto", "alarma si sube o baja"],
+    "glucose": ["both", "supuesto", "alarma si sube o baja"],
+    "sleep": ["low", "supuesto", "solo cuando baja"],
+    "mood": ["low", "supuesto", "solo cuando baja"]
+  },
+  "absolute_red": {
+    "hr_rest_gt": [100, "referencia", "AHA, All About Heart Rate: 60 a 100 lpm como normal en reposo"],
+    "bp_sys_gt": [180, "referencia", "AHA 2025: hipertension severa, mas de 180/120"],
+    "bp_dia_gt": [120, "referencia", "AHA 2025: hipertension severa, mas de 180/120"],
+    "temp_gt": [38.0, "referencia", "MSD Manual, Fever in Adults: fiebre ORAL mas de 38,0 C. v0.2: solo se aplica en los primeros absolute_only_first_days dias de vuelo"],
+    "spo2_lt": [90, "referencia", "Open Critical Care: hipoxemia por debajo de 90 %"],
+    "glucose_lt": [54, "referencia", "ADA 2026 tabla 6.4: hipoglucemia nivel 2"],
+    "fitness_lt_pct": [80, "referencia", "NASA-STD-3001 Vol. 1 Rev. C, 4.1.3 y 4.6.2: mantener al menos 80 % de la capacidad previa"],
+    "temp_gt_inflight": [38.5, "supuesto", "v0.3 (14 nov 2026, decision del equipo: criterio de la sesion de revision). Despues de los primeros absolute_only_first_days dias de vuelo el rojo fijo sube de 38,0 a 38,5 C. 38,0 C es fiebre ORAL en la Tierra (MSD Manual) y la temperatura normal en vuelo sube +1,01 C (Stahn et al., Sci Rep 2017, https://doi.org/10.1038/s41598-017-15560-w), por lo que algunas personas sanas rozan 38,0 C en reposo. 38,5 C = 0,5 C por encima del techo de reposo medido en vuelo (~38,0 C leido de la figura). NO tiene fuente publicada: es un supuesto del equipo. Antes (v0.2) era null = solo linea base personal; eso dejaba en verde a un astronauta con 38,5 C durante meses porque la linea base movil de 28 dias absorbe la deriva lenta."],
+    "temp_inflight_consecutive_days": [2, "supuesto", "v0.3: el rojo fijo de temperatura en vuelo exige 2 lecturas seguidas sobre el limite. Motivo: con 1 lectura el limite de 38,5 C daba un rojo falso por ruido a mas de la mitad de las misiones simuladas (ver tradeoff_table.csv, variantes G y H); una fiebre real dura varios dias y un artefacto de sensor dura uno. Sin fuente publicada: supuesto del equipo."],
+    "glucose_gt": [126, "referencia", "ADA 2026 sec. 2: 126 mg/dl o mas en ayunas = criterio de diabetes. Solo aplica si mvp.include_glucose = 1"]
+  },
+  "absolute_yellow": {
+    "hr_rest_lt": [50, "referencia", "ACC/AHA/HRS 2018 (Kusumoto et al., J Am Coll Cardiol 2019;74:e51, doi 10.1016/j.jacc.2018.10.044): bradicardia sinusal < 50 lpm. Es definicion diagnostica, no umbral de alarma; amarillo y no rojo porque la guia considera benigna la bradicardia del atleta y del sueno. Se aplica a la lectura de reposo despierto de las 08:30"],
+    "bp_sys_lt": [null, "referencia", "null = desactivado. Opcion: 90 mmHg (Brignole et al., 2018 ESC Guidelines for syncope, Eur Heart J 39:1883, doi 10.1093/eurheartj/ehy037) [SIN VERIFICAR: es el absoluto de la prueba de pie, no de reposo en microgravedad]. PENDIENTE DECISION DEL EQUIPO"]
+  },
+  "yellow_extra": {
+    "spo2_drop_points": [3, "referencia", "BTS 2017: valorar si la saturacion cae 3 % o mas"],
+    "glucose_yellow_high": [100, "referencia", "ADA, Standards of Care 2026, sec. 2 (https://doi.org/10.2337/dc26-S002): glucosa en ayunas alterada 100-125 mg/dl. v0.2 (antes 126)"],
+    "glucose_yellow_low": [70, "referencia", "ADA 2026 tabla 6.4: nivel 1"],
+    "exercise_min_sessions_week": [3, "supuesto", "v0.2 provisional: menos de 3 de 6 sesiones programadas en 7 dias. Con 5 daba amarillo falso ~13 % de los dias limpios; con 4 sube ~0,5 falsos por mision frente a 3 (ver tradeoff_table.csv y sensitivity_exercise.csv)"],
+    "exercise_session_min_done": [90, "supuesto", "minutos para contar una sesion como hecha"]
+  },
+  "mvp": {
+    "include_glucose": [0, "supuesto", "opinion: glucosa manual y fuera del semaforo de la version minima"],
+    "include_exercise": [1, "supuesto", "el ejercicio entra como adherencia a la contramedida"]
+  },
+  "evaluation": {
+    "grace_days": [3, "supuesto", "dias despues del fin de una anomalia en que una alerta todavia cuenta como acierto"]
+  }
+}

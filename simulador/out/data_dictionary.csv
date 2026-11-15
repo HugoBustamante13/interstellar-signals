@@ -1,0 +1,19 @@
+column,description,unit,expected_range
+astronaut_id,Identificador del astronauta simulado,texto,SIM-001...
+sex,Sexo del perfil simulado (F o M),texto,"F, M"
+mission_day,"Dia de mision; dias previos -N..-1, vuelo 1..duracion",dias,-30..180
+phase,preflight o inflight,texto,"preflight, inflight"
+hr_rest_bpm,"FC en reposo, sentado, 08:30",lpm,"52-95 (P5-P95, referencia terrestre)"
+bp_sys_mmhg,Presion sistolica en reposo,mmHg,94-132 (referencia terrestre)
+bp_dia_mmhg,Presion diastolica en reposo,mmHg,51-84 (referencia terrestre)
+spo2_pct,Saturacion de oxigeno; vacio si el sensor no leyo,%,mayor o igual a 90 es lo esperado; sin rango normal con fuente
+temp_c,Temperatura (equivalente oral),C,"35,7-37,3 (95 % de Obermeyer 2017)"
+glucose_mgdl,"Glucosa en ayunas, entrada manual semanal; vacio otros dias",mg/dl,sin rango normal con fuente
+sleep_h,Horas dormidas la noche previa,h,"6-8 tipico; promedio en vuelo 6-6,5 (NASA)"
+mood_1_5,Estado de animo autorreportado,puntaje 1-5,sin fuente
+exercise_min,Minutos de ejercicio completados ese dia (solo vuelo),min,0 o ~150
+fitness_pct_preflight,Aptitud fisica respecto a la previa; solo dias de prueba,%,>=80 (requisito NASA-STD-3001)
+quality_flags,"Problemas de calidad conocidos (spo2_missing_motion, missing_day)",texto,
+truth_anomaly_ids,Etiqueta de verdad: anomalias activas ese dia (ver anomalies),texto,
+truth_fitness_lt80,Etiqueta de verdad: la aptitud fisica REAL (no la medida) esta bajo 80 % de la previa,bool,False/True
+data_origin,Siempre 'synthetic',texto,synthetic

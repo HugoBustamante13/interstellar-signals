@@ -1,0 +1,8 @@
+type,n,recall_alerta_nueva_amarillo_o_peor,latencia_mediana_d,recall_alerta_nueva_rojo
+bp_spike,106,0.472,2.0,0.425
+exercise_dropout,219,0.9,3.0,0.233
+glucose_high,64,0.125,2.0,0.031
+infection,150,0.733,2.0,0.653
+mood_low,173,0.37,2.0,0.202
+sleep_loss,238,0.429,2.0,0.328
+spo2_dip,94,0.936,0.0,0.681

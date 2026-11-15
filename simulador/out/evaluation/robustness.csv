@@ -1,0 +1,8 @@
+grupo,factor,n_parametros,falsos_amarillo_o_peor_por_mision,falsos_rojo_por_mision,recall_alerta_nueva_amarillo_o_peor,recall_alerta_nueva_rojo,latencia_mediana_d,frac_eventos_con_alerta_ya_encendida,frac_dias_alerta_total,frac_dias_alerta_limpios,frac_dias_rojo_limpios
+base,1.0,0,1.84,0.74,0.614,0.372,2.0,0.219,0.1669,0.0583,0.016
+deriva,0.5,5,1.81,0.71,0.6,0.354,2.0,0.216,0.1654,0.058,0.0158
+deriva,1.5,5,1.88,0.77,0.628,0.389,2.0,0.22,0.1684,0.0584,0.0162
+ruido,0.5,9,1.28,0.52,0.768,0.598,2.0,0.228,0.1735,0.0559,0.0146
+ruido,1.5,9,2.98,1.32,0.541,0.287,2.0,0.228,0.1705,0.0663,0.0201
+magnitud_anomalias,0.5,16,1.85,0.81,0.435,0.139,3.0,0.169,0.1564,0.059,0.0162
+magnitud_anomalias,1.5,16,1.82,0.79,0.732,0.555,2.0,0.253,0.1742,0.0583,0.016

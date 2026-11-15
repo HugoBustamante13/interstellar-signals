@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spaceapps2026.local/schema/mission_synthetic/0.2.0",
+  "title": "Mision SINTETICA de monitoreo de salud de astronautas",
+  "description": "Contrato del archivo out/mission_synthetic.json (simulator.py v0.2). TODO el contenido es SINTETICO: no son mediciones de astronautas reales. data_origin debe ser 'synthetic'. Los valores nulos significan lectura faltante.",
+  "type": "object",
+  "required": ["schema_version", "data_origin", "disclaimer", "generator", "mission", "indicators", "astronauts", "daily", "anomalies", "intraday_hr"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^0\\.2\\.[0-9]+$", "description": "Version del esquema (semver). Cambio de minor = cambio incompatible mientras sea 0.x."},
+    "data_origin": {"const": "synthetic", "description": "Obligatorio y siempre 'synthetic'."},
+    "disclaimer": {"type": "string", "minLength": 20, "pattern": "SINTETICOS", "description": "Advertencia visible de que los datos son simulados."},
+    "generator": {
+      "type": "object",
+      "required": ["name", "seed", "params_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "description": "Nombre y version del simulador."},
+        "seed": {"type": "integer", "description": "Semilla: con la misma semilla y los mismos parametros se obtiene el mismo archivo."},
+        "params_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 del texto de sim_params.json usado."}
+      }
+    },
+    "mission": {
+      "type": "object",
+      "required": ["duration_days", "preflight_days", "day_convention"],
+      "additionalProperties": false,
+      "properties": {
+        "duration_days": {"type": "integer", "minimum": 1},
+        "preflight_days": {"type": "integer", "minimum": 0},
+        "day_convention": {"type": "string", "description": "Dias previos -N..-1; dias de vuelo 1..duration. No existe el dia 0."}
+      }
+    },
+    "indicators": {
+      "type": "object",
+      "description": "Metadatos por columna de valor de 'daily'.",
+      "propertyNames": {"$ref": "#/$defs/valueColumn"},
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label", "unit", "frequency", "reference"],
+        "additionalProperties": false,
+        "properties": {
+          "label": {"type": "string"},
+          "unit": {"type": "string"},
+          "frequency": {"type": "string"},
+          "reference": {"type": "string", "description": "Rango de referencia con su fuente, o 'sin fuente'."}
+        }
+      }
+    },
+    "astronauts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["astronaut_id", "sex", "age_years", "baseline_preflight_observed", "latent_truth"],
+        "additionalProperties": false,
+        "properties": {
+          "astronaut_id": {"$ref": "#/$defs/astronautId"},
+          "sex": {"enum": ["F", "M"]},
+          "age_years": {"type": "number", "minimum": 18, "maximum": 80},
+          "baseline_preflight_observed": {
+            "type": "object",
+            "description": "Media, DE y numero de lecturas de los dias previos al vuelo (ancla personal).",
+            "propertyNames": {"$ref": "#/$defs/valueColumn"},
+            "additionalProperties": {
+              "type": "object",
+              "required": ["mean", "sd", "n"],
+              "additionalProperties": false,
+              "properties": {
+                "mean": {"type": ["number", "null"]},
+                "sd": {"type": ["number", "null"], "minimum": 0},
+                "n": {"type": "integer", "minimum": 0}
+              }
+            }
+          },
+          "latent_truth": {
+            "type": "object",
+            "description": "Parametros internos SINTETICOS del perfil (linea base verdadera, derivas, adherencia...). Solo para evaluacion; un software real no los tendria.",
+            "additionalProperties": {"type": ["number", "string", "integer"]}
+          }
+        }
+      }
+    },
+    "daily": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["astronaut_id", "mission_day", "phase", "hr_rest_bpm", "bp_sys_mmhg", "bp_dia_mmhg", "spo2_pct", "temp_c", "glucose_mgdl", "sleep_h", "mood_1_5", "exercise_min", "fitness_pct_preflight", "quality_flags", "truth_anomaly_ids", "truth_fitness_lt80"],
+        "additionalProperties": false,
+        "properties": {
+          "astronaut_id": {"$ref": "#/$defs/astronautId"},
+          "mission_day": {"$ref": "#/$defs/missionDay"},
+          "phase": {"enum": ["preflight", "inflight"]},
+          "hr_rest_bpm": {"type": ["number", "null"], "minimum": 30, "maximum": 200, "description": "FC en reposo, sentado, 08:30 (lpm)."},
+          "bp_sys_mmhg": {"type": ["number", "null"], "minimum": 60, "maximum": 250, "description": "Presion sistolica (mmHg)."},
+          "bp_dia_mmhg": {"type": ["number", "null"], "minimum": 30, "maximum": 150, "description": "Presion diastolica (mmHg)."},
+          "spo2_pct": {"type": ["number", "null"], "minimum": 70, "maximum": 100, "description": "Saturacion de oxigeno (%). Nulo si el sensor no leyo."},
+          "temp_c": {"type": ["number", "null"], "minimum": 33, "maximum": 42, "description": "Temperatura en escala ORAL equivalente (C)."},
+          "glucose_mgdl": {"type": ["number", "null"], "minimum": 40, "maximum": 400, "description": "Glucosa en ayunas, entrada manual semanal; nulo otros dias. Parametros = supuesto del equipo."},
+          "sleep_h": {"type": ["number", "null"], "minimum": 0, "maximum": 14, "description": "Horas dormidas la noche previa."},
+          "mood_1_5": {"type": ["number", "null"], "minimum": 1, "maximum": 5, "description": "Animo autorreportado 1-5. Escala y parametros = supuesto del equipo."},
+          "exercise_min": {"type": ["number", "null"], "minimum": 0, "maximum": 400, "description": "Minutos de ejercicio completados (solo vuelo; nulo antes del vuelo)."},
+          "fitness_pct_preflight": {"type": ["number", "null"], "minimum": 0, "maximum": 150, "description": "Aptitud fisica en % de la previa; solo dias de prueba."},
+          "quality_flags": {"type": "array", "items": {"enum": ["spo2_missing_motion", "missing_day"]}, "uniqueItems": true},
+          "truth_anomaly_ids": {"type": "array", "items": {"$ref": "#/$defs/anomalyId"}, "description": "Etiqueta de verdad (solo en datos sinteticos)."},
+          "truth_fitness_lt80": {"type": "boolean", "description": "Etiqueta de verdad: aptitud REAL bajo 80 % de la previa."}
+        }
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["anomaly_id", "astronaut_id", "type", "is_health_event", "start_day", "end_day", "magnitude_scale"],
+        "additionalProperties": false,
+        "properties": {
+          "anomaly_id": {"$ref": "#/$defs/anomalyId"},
+          "astronaut_id": {"$ref": "#/$defs/astronautId"},
+          "type": {"enum": ["infection", "sleep_loss", "bp_spike", "spo2_dip", "mood_low", "exercise_dropout", "glucose_high", "sensor_artifact"]},
+          "is_health_event": {"type": "boolean", "description": "false = artefacto de sensor (error de medicion, NO evento de salud)."},
+          "start_day": {"type": "integer", "minimum": 1},
+          "end_day": {"type": "integer", "minimum": 1},
+          "magnitude_scale": {"type": "number", "exclusiveMinimum": 0},
+          "indicator": {"enum": ["temp", "hr_rest", "bp_sys", "spo2"], "description": "Solo en artefactos: indicador afectado."}
+        },
+        "if": {"properties": {"type": {"const": "sensor_artifact"}}},
+        "then": {"required": ["indicator"], "properties": {"is_health_event": {"const": false}}},
+        "else": {"properties": {"is_health_event": {"const": true}}}
+      }
+    },
+    "intraday_hr": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["astronaut_id", "step_minutes", "first_mission_day", "n_days", "context_codes", "hr_bpm", "context"],
+        "additionalProperties": false,
+        "properties": {
+          "astronaut_id": {"$ref": "#/$defs/astronautId"},
+          "step_minutes": {"type": "integer", "minimum": 1, "maximum": 1440},
+          "first_mission_day": {"type": "integer"},
+          "n_days": {"type": "integer", "minimum": 1},
+          "context_codes": {"type": "object", "additionalProperties": {"type": "string"}},
+          "hr_bpm": {"type": "array", "items": {"type": "number", "minimum": 20, "maximum": 220}, "description": "Serie plana: n_days * (1440 / step_minutes) valores, dia a dia desde first_mission_day (saltando el dia 0)."},
+          "context": {"type": "array", "items": {"enum": [0, 1, 2]}, "description": "0 vigilia, 1 sueno, 2 ejercicio; misma longitud que hr_bpm."}
+        }
+      }
+    },
+    "semaforo": {
+      "type": "object",
+      "description": "Opcional. Estado del semaforo v0.2 por dia, con umbrales PROVISIONALES (supuestos del equipo).",
+      "required": ["version", "config_sha256", "status_codes", "note", "daily_status"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {"type": "string"},
+        "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "status_codes": {"type": "object", "additionalProperties": {"enum": ["verde", "amarillo", "rojo"]}},
+        "note": {"type": "string"},
+        "daily_status": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["astronaut_id", "mission_day", "status", "n_yellow", "reasons", "by_indicator"],
+            "additionalProperties": false,
+            "properties": {
+              "astronaut_id": {"$ref": "#/$defs/astronautId"},
+              "mission_day": {"$ref": "#/$defs/missionDay"},
+              "status": {"$ref": "#/$defs/statusCode"},
+              "n_yellow": {"type": "integer", "minimum": 0},
+              "reasons": {"type": "array", "items": {"type": "string", "pattern": "^[a-z_0-9]+:[YR]$"}, "description": "indicador:Y (amarillo) o indicador:R (rojo)."},
+              "by_indicator": {
+                "type": "object",
+                "propertyNames": {"enum": ["hr_rest", "bp_sys", "bp_dia", "spo2", "temp", "glucose", "sleep", "mood", "exercise", "fitness"]},
+                "additionalProperties": {"$ref": "#/$defs/statusCode"}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "astronautId": {"type": "string", "pattern": "^SIM-[0-9]{3}$", "description": "El prefijo SIM- marca un perfil simulado."},
+    "anomalyId": {"type": "string", "pattern": "^SIM-[0-9]{3}-ANOM-[0-9]{3}$"},
+    "missionDay": {"type": "integer", "not": {"const": 0}},
+    "statusCode": {"enum": [0, 1, 2], "description": "0 verde, 1 amarillo, 2 rojo."},
+    "valueColumn": {"enum": ["hr_rest_bpm", "bp_sys_mmhg", "bp_dia_mmhg", "spo2_pct", "temp_c", "glucose_mgdl", "sleep_h", "mood_1_5", "exercise_min", "fitness_pct_preflight"]}
+  }
+}

@@ -1,0 +1,158 @@
+{
+ "hr_rest": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 63.5,
+  "n_ventana": 28,
+  "media": 69.12,
+  "de": 3.85,
+  "de_prediccion": 3.92,
+  "banda_baja": 59.32,
+  "banda_alta": 78.92,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   59.32,
+   78.92
+  ]
+ },
+ "bp_sys": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 120.0,
+  "n_ventana": 28,
+  "media": 114.14,
+  "de": 4.93,
+  "de_prediccion": 5.01,
+  "banda_baja": 101.61,
+  "banda_alta": 126.68,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   101.61,
+   126.68
+  ]
+ },
+ "bp_dia": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 71.0,
+  "n_ventana": 28,
+  "media": 60.39,
+  "de": 4.01,
+  "de_prediccion": 4.08,
+  "banda_baja": 50.18,
+  "banda_alta": 70.6,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   50.18,
+   70.6
+  ]
+ },
+ "spo2": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 98.0,
+  "n_ventana": 26,
+  "media": 97.54,
+  "de": 0.81,
+  "de_prediccion": 0.83,
+  "banda_baja": 95.47,
+  "banda_alta": 99.61,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   95.47,
+   null
+  ]
+ },
+ "temp": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 36.8,
+  "n_ventana": 28,
+  "media": 37.04,
+  "de": 0.18,
+  "de_prediccion": 0.19,
+  "banda_baja": 36.57,
+  "banda_alta": 37.51,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   36.57,
+   37.51
+  ]
+ },
+ "sleep": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 6.44,
+  "n_ventana": 28,
+  "media": 5.83,
+  "de": 0.53,
+  "de_prediccion": 0.54,
+  "banda_baja": 4.47,
+  "banda_alta": 7.19,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   4.47,
+   null
+  ]
+ },
+ "mood": {
+  "astronauta": "SIM-001",
+  "dia": 60,
+  "lectura": 4.3,
+  "n_ventana": 28,
+  "media": 3.83,
+  "de": 0.36,
+  "de_prediccion": 0.37,
+  "banda_baja": 2.91,
+  "banda_alta": 4.75,
+  "coincide_con_semaforo_py": true,
+  "banda_semaforo_py": [
+   2.91,
+   null
+  ]
+ },
+ "exercise": {
+  "astronauta": "SIM-002",
+  "dia": 38,
+  "minutos_7_dias": [
+   125.0,
+   158.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "sesiones_hechas": 2,
+  "minimo_sesiones": 3,
+  "estado": 1
+ },
+ "fitness": {
+  "astronauta": "SIM-003",
+  "dia": 180,
+  "aptitud_pct": 85.8,
+  "limite_rojo": 80
+ },
+ "glucose_ventana": {
+  "n_lecturas_en_28_dias": 4,
+  "minimo_requerido": 14
+ },
+ "temp_vuelo_por_astronauta": {
+  "SIM-001": {
+   "mean": 37.05,
+   "max": 37.6
+  },
+  "SIM-002": {
+   "mean": 37.94,
+   "max": 39.1
+  },
+  "SIM-003": {
+   "mean": 37.23,
+   "max": 38.5
+  },
+  "SIM-004": {
+   "mean": 37.96,
+   "max": 38.9
+  }
+ }
+}

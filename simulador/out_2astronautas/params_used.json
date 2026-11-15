@@ -1,0 +1,968 @@
+[
+ {
+  "param": "mission.duration_days",
+  "value": 180,
+  "status": "supuesto",
+  "source": "mision tipo ISS de unos 6 meses (Otsuka 2021: ~156 d; Norsk 2015: 85-192 d)"
+ },
+ {
+  "param": "mission.preflight_days",
+  "value": 30,
+  "status": "supuesto",
+  "source": "dias previos al vuelo usados como ancla personal; eleccion del equipo"
+ },
+ {
+  "param": "mission.seed",
+  "value": 42,
+  "status": "supuesto",
+  "source": "semilla para reproducir el dataset"
+ },
+ {
+  "param": "mission.measure_hour",
+  "value": 8.5,
+  "status": "supuesto",
+  "source": "hora local de la medicion de reposo sentado (8:30)"
+ },
+ {
+  "param": "mission.intraday_step_min",
+  "value": 30,
+  "status": "supuesto",
+  "source": "paso de la serie intradiaria de FC"
+ },
+ {
+  "param": "mission.missing_day_prob",
+  "value": 0.01,
+  "status": "supuesto",
+  "source": "dia sin ninguna lectura (fallo de equipo o de comunicacion)"
+ },
+ {
+  "param": "cohort.n_female",
+  "value": 2,
+  "status": "supuesto",
+  "source": "tamano del demo"
+ },
+ {
+  "param": "cohort.n_male",
+  "value": 2,
+  "status": "supuesto",
+  "source": "tamano del demo"
+ },
+ {
+  "param": "cohort.age_mean_F",
+  "value": 35.2,
+  "status": "medido",
+  "source": "edad en el primer vuelo, ajustada: Smith, Kelley y Basner, Acta Astronautica 175:290-299, 2020"
+ },
+ {
+  "param": "cohort.age_mean_M",
+  "value": 38.8,
+  "status": "medido",
+  "source": "Smith, Kelley y Basner 2020"
+ },
+ {
+  "param": "cohort.age_sd_F",
+  "value": 4.5,
+  "status": "derivado",
+  "source": "DE de la edad de aspirantes mujeres, NASA RP-1304 (1993), usada como aproximacion"
+ },
+ {
+  "param": "cohort.age_sd_M",
+  "value": 4.9,
+  "status": "derivado",
+  "source": "DE de la edad de aspirantes hombres, NASA RP-1304 (1993), usada como aproximacion"
+ },
+ {
+  "param": "hr.mean_F",
+  "value": 76,
+  "status": "referencia",
+  "source": "Ostchega et al., NHSR 41, NCHS/CDC 2011, mujeres 20-39 (adultos de EE. UU., no astronautas)"
+ },
+ {
+  "param": "hr.p5_F",
+  "value": 57,
+  "status": "referencia",
+  "source": "NHSR 41, mujeres 20-39"
+ },
+ {
+  "param": "hr.p95_F",
+  "value": 95,
+  "status": "referencia",
+  "source": "NHSR 41, mujeres 20-39"
+ },
+ {
+  "param": "hr.mean_M",
+  "value": 71,
+  "status": "referencia",
+  "source": "NHSR 41, hombres 20-39"
+ },
+ {
+  "param": "hr.p5_M",
+  "value": 52,
+  "status": "referencia",
+  "source": "NHSR 41, hombres 20-39"
+ },
+ {
+  "param": "hr.p95_M",
+  "value": 89,
+  "status": "referencia",
+  "source": "NHSR 41, hombres 20-39"
+ },
+ {
+  "param": "hr.day_noise_sd",
+  "value": 3.0,
+  "status": "supuesto",
+  "source": "variacion dia a dia dentro de la misma persona (lpm); sin fuente"
+ },
+ {
+  "param": "hr.ar1",
+  "value": 0.3,
+  "status": "supuesto",
+  "source": "autocorrelacion dia a dia; sin fuente"
+ },
+ {
+  "param": "hr.drift_mean",
+  "value": 0.0,
+  "status": "medido",
+  "source": "Norsk et al., J Physiol 2015: la FC no cambio en vuelo (8 hombres)"
+ },
+ {
+  "param": "hr.drift_sd",
+  "value": 0.0,
+  "status": "supuesto",
+  "source": "sin dispersion individual publicada"
+ },
+ {
+  "param": "hr.min",
+  "value": 40,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "hr.max",
+  "value": 140,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "hr_circ.amp_pre",
+  "value": 10.9,
+  "status": "medido",
+  "source": "Otsuka et al., Sci Rep 2021: amplitud circadiana de la FC antes del vuelo, lpm"
+ },
+ {
+  "param": "hr_circ.amp_final",
+  "value": 12.77,
+  "status": "medido",
+  "source": "Otsuka 2021: amplitud en la ISS al dia ~143"
+ },
+ {
+  "param": "hr_circ.amp_tau_days",
+  "value": 10.0,
+  "status": "derivado",
+  "source": "constante de tiempo ajustada para que a los 21 dias la amplitud sea 12,54 (Otsuka 2021)"
+ },
+ {
+  "param": "hr_circ.amp_between_sd",
+  "value": 2.0,
+  "status": "supuesto",
+  "source": "dispersion entre personas de la amplitud; sin fuente"
+ },
+ {
+  "param": "hr_circ.acrophase_hour",
+  "value": 15.5,
+  "status": "supuesto",
+  "source": "hora del maximo de la FC; sin fuente"
+ },
+ {
+  "param": "hr_circ.acrophase_between_sd_h",
+  "value": 1.0,
+  "status": "supuesto",
+  "source": "dispersion entre personas; sin fuente"
+ },
+ {
+  "param": "hr_circ.intraday_sd",
+  "value": 2.5,
+  "status": "supuesto",
+  "source": "ruido de la FC intradiaria (lpm); sin fuente"
+ },
+ {
+  "param": "hr_circ.intraday_ar1",
+  "value": 0.7,
+  "status": "supuesto",
+  "source": "autocorrelacion entre pasos de 30 min; sin fuente"
+ },
+ {
+  "param": "hr_circ.exercise_hr_delta",
+  "value": 45,
+  "status": "supuesto",
+  "source": "aumento de la FC durante el bloque aerobico (lpm); sin fuente"
+ },
+ {
+  "param": "hr_circ.exercise_start_hour",
+  "value": 17.0,
+  "status": "supuesto",
+  "source": "hora del bloque aerobico"
+ },
+ {
+  "param": "bp.sys_mean_F",
+  "value": 109,
+  "status": "referencia",
+  "source": "Wright et al., NHSR 35, NCHS/CDC 2011, columna Normal, mujeres 18-39"
+ },
+ {
+  "param": "bp.sys_p5_F",
+  "value": 94,
+  "status": "referencia",
+  "source": "NHSR 35, mujeres 18-39"
+ },
+ {
+  "param": "bp.sys_p95_F",
+  "value": 126,
+  "status": "referencia",
+  "source": "NHSR 35, mujeres 18-39"
+ },
+ {
+  "param": "bp.dia_mean_F",
+  "value": 67,
+  "status": "referencia",
+  "source": "NHSR 35, mujeres 18-39"
+ },
+ {
+  "param": "bp.dia_p5_F",
+  "value": 52,
+  "status": "referencia",
+  "source": "NHSR 35, mujeres 18-39"
+ },
+ {
+  "param": "bp.dia_p95_F",
+  "value": 81,
+  "status": "referencia",
+  "source": "NHSR 35, mujeres 18-39"
+ },
+ {
+  "param": "bp.sys_mean_M",
+  "value": 117,
+  "status": "referencia",
+  "source": "NHSR 35, hombres 18-39"
+ },
+ {
+  "param": "bp.sys_p5_M",
+  "value": 101,
+  "status": "referencia",
+  "source": "NHSR 35, hombres 18-39"
+ },
+ {
+  "param": "bp.sys_p95_M",
+  "value": 132,
+  "status": "referencia",
+  "source": "NHSR 35, hombres 18-39"
+ },
+ {
+  "param": "bp.dia_mean_M",
+  "value": 68,
+  "status": "referencia",
+  "source": "NHSR 35, hombres 18-39"
+ },
+ {
+  "param": "bp.dia_p5_M",
+  "value": 51,
+  "status": "referencia",
+  "source": "NHSR 35, hombres 18-39"
+ },
+ {
+  "param": "bp.dia_p95_M",
+  "value": 84,
+  "status": "referencia",
+  "source": "NHSR 35, hombres 18-39"
+ },
+ {
+  "param": "bp.sys_dia_corr",
+  "value": 0.5,
+  "status": "supuesto",
+  "source": "correlacion entre sistolica y diastolica; sin fuente"
+ },
+ {
+  "param": "bp.day_noise_sd_sys",
+  "value": 5.0,
+  "status": "supuesto",
+  "source": "variacion dia a dia (mmHg); sin fuente"
+ },
+ {
+  "param": "bp.day_noise_sd_dia",
+  "value": 4.0,
+  "status": "supuesto",
+  "source": "variacion dia a dia (mmHg); sin fuente"
+ },
+ {
+  "param": "bp.ar1",
+  "value": 0.3,
+  "status": "supuesto",
+  "source": "autocorrelacion dia a dia; sin fuente"
+ },
+ {
+  "param": "bp.drift_sys_mmhg_M",
+  "value": -8.0,
+  "status": "medido",
+  "source": "Norsk et al. 2015: sistolica -8 +/- 2 mmHg (promedio de 24 h, 8 hombres)"
+ },
+ {
+  "param": "bp.drift_dia_mmhg_M",
+  "value": -9.0,
+  "status": "medido",
+  "source": "Norsk et al. 2015: diastolica -9 +/- 2 mmHg"
+ },
+ {
+  "param": "bp.drift_between_sd_mmhg",
+  "value": 5.7,
+  "status": "derivado",
+  "source": "error estandar 2 mmHg por raiz de 8 sujetos (Norsk 2015)"
+ },
+ {
+  "param": "bp.female_change_rule",
+  "value": 1,
+  "status": "supuesto",
+  "source": "1 = las mujeres reciben el mismo cambio RELATIVO que los hombres; sin datos en mujeres"
+ },
+ {
+  "param": "bp.tau_days",
+  "value": 14.0,
+  "status": "supuesto",
+  "source": "tiempo de adaptacion; Norsk no publica la curva temporal"
+ },
+ {
+  "param": "bp.sys_min",
+  "value": 70,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "bp.sys_max",
+  "value": 230,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "bp.dia_min",
+  "value": 40,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "bp.dia_max",
+  "value": 140,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "spo2.mean",
+  "value": 97.5,
+  "status": "supuesto",
+  "source": "sin rango normal con fuente; Conkin et al. 2017 midio ~97 % en vuelo con hipoxia leve"
+ },
+ {
+  "param": "spo2.total_sd",
+  "value": 0.9,
+  "status": "supuesto",
+  "source": "dispersion total; sin fuente"
+ },
+ {
+  "param": "spo2.within_sd",
+  "value": 0.7,
+  "status": "supuesto",
+  "source": "variacion dia a dia; sin fuente"
+ },
+ {
+  "param": "spo2.ar1",
+  "value": 0.2,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "spo2.drift_mean",
+  "value": 0.0,
+  "status": "medido",
+  "source": "Conkin 2017: la microgravedad no altero la SpO2 bajo hipoxia leve (8 hombres)"
+ },
+ {
+  "param": "spo2.missing_prob",
+  "value": 0.1,
+  "status": "supuesto",
+  "source": "lectura perdida por movimiento; Hearn 2023 midio 12-82 % en relojes con movimiento muy leve"
+ },
+ {
+  "param": "spo2.min",
+  "value": 80,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "spo2.max",
+  "value": 100,
+  "status": "referencia",
+  "source": "la saturacion no pasa de 100 %"
+ },
+ {
+  "param": "temp.mean",
+  "value": 36.6,
+  "status": "referencia",
+  "source": "Obermeyer, Samra y Mullainathan, BMJ 2017 (media oral de 35 488 pacientes). Lo apoya Geneva et al., Open Forum Infect Dis 2019, Tabla 3 (https://doi.org/10.1093/ofid/ofz032): oral 36,57 +/- 0,42 C. El simulador trabaja en ESCALA ORAL"
+ },
+ {
+  "param": "temp.total_sd",
+  "value": 0.41,
+  "status": "derivado",
+  "source": "rango del 95 % 35,7-37,3 (Obermeyer 2017): 1,6 / 3,92"
+ },
+ {
+  "param": "temp.within_sd",
+  "value": 0.25,
+  "status": "supuesto",
+  "source": "parte de la variacion que es dia a dia; sin fuente"
+ },
+ {
+  "param": "temp.ar1",
+  "value": 0.3,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "temp.drift_mean",
+  "value": 1.01,
+  "status": "medido",
+  "source": "Stahn et al., Sci Rep 7:16180, 2017 (https://doi.org/10.1038/s41598-017-15560-w): +1,01 C en reposo, n = 11 (7 H, 4 M), ISS ~6 meses. OJO: medido con sensor de flujo de calor en la FRENTE (Double Sensor), no rectal; linea base previa ~36,3 C (leida de la Fig. 1a). Se suma como CAMBIO a la escala oral"
+ },
+ {
+  "param": "temp.drift_sd",
+  "value": 0.35,
+  "status": "supuesto",
+  "source": "Stahn 2017 no publica la DE individual; el IC 95 % de la Fig. 1a (+/-0,3-0,4 C con n = 11) sugiere ~0,5-0,6 C entre personas (estimacion gruesa, investigacion tanda 1). Se mantiene 0,35 hasta tener dato"
+ },
+ {
+  "param": "temp.tau_days",
+  "value": 25.0,
+  "status": "derivado",
+  "source": "meseta tras ~75 dias (Stahn 2017, Fig. 1a): tres constantes de tiempo"
+ },
+ {
+  "param": "temp.plateau_max_c",
+  "value": 38.0,
+  "status": "supuesto",
+  "source": "v0.3: tope de la meseta individual de reposo en vuelo (linea base + deriva). Motivo: Stahn et al., Sci Rep 2017 (https://doi.org/10.1038/s41598-017-15560-w), Fig. 1a: la media de grupo llega a ~37,7 C y el IC 95 % (+/-0,3-0,4 C) deja a algunas personas cerca de 38 C en reposo; no hay dato medido de reposo en vuelo por encima de eso. El valor 38,0 es una lectura gruesa de la figura (estimacion), no una cifra publicada. Se recorta la deriva, no la linea base: sin tope, el muestreo normal daba mesetas de 38,4-38,7 C (fiebre sostenida durante meses) que nadie ha medido."
+ },
+ {
+  "param": "temp.site_offset_c",
+  "value": 0.0,
+  "status": "derivado",
+  "source": "0 = se simula el equivalente ORAL. Si el sensor real mide temperatura central (rectal/esofagica) sumar +0,47 C (+0,36 en menores de 60): Geneva 2019, Tabla 3, rectal 37,04 - oral 36,57 (resta de medias de grupos distintos). Con sensor de frente, Stahn 2017 midio ~36,3 C previo (mas cerca de la oral). El sitio del sensor real esta PENDIENTE (Hugo)"
+ },
+ {
+  "param": "temp.min",
+  "value": 34.0,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "temp.max",
+  "value": 41.5,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "glucose.mean",
+  "value": 88,
+  "status": "supuesto",
+  "source": "SUPUESTO DEL EQUIPO (decision de Isa, 14 nov). Numero exacto sin fuente; elegido dentro del rango normal en ayunas < 100 mg/dl (ADA, Standards of Care 2026, sec. 2, Tabla 2.1, https://doi.org/10.2337/dc26-S002). Analogo: en la inmersion seca VIVALDI (ESA, 5 dias) la glucosa en ayunas quedo < 110 mg/dl en todos y no cambio (Commun Med 2026, https://doi.org/10.1038/s43856-026-01540-7)"
+ },
+ {
+  "param": "glucose.total_sd",
+  "value": 8.0,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "glucose.within_sd",
+  "value": 5.0,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "glucose.ar1",
+  "value": 0.1,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "glucose.drift_mean",
+  "value": 0.0,
+  "status": "sin fuente",
+  "source": "Direccion esperada hacia arriba (resistencia a la insulina en vuelo, Hughson et al., Am J Physiol 2016, solo resumen) pero SIN magnitud publicada: se deja en 0 en vez de inventar una cifra. Diferencia por sexo contradictoria (Hughson vs VIVALDI): no se modela"
+ },
+ {
+  "param": "glucose.sample_interval_days",
+  "value": 7,
+  "status": "supuesto",
+  "source": "entrada manual semanal"
+ },
+ {
+  "param": "glucose.min",
+  "value": 50,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "glucose.max",
+  "value": 300,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "sleep.mean_h",
+  "value": 7.4,
+  "status": "supuesto",
+  "source": "Otsuka 2021: 7,6 h antes del vuelo en los 7 que durmieron menos; AASM/SRS pide 7 h o mas"
+ },
+ {
+  "param": "sleep.between_sd_h",
+  "value": 0.4,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "sleep.within_sd_h",
+  "value": 0.6,
+  "status": "supuesto",
+  "source": "variacion noche a noche; sin fuente"
+ },
+ {
+  "param": "sleep.ar1",
+  "value": 0.2,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "sleep.p_decrease",
+  "value": 0.7,
+  "status": "medido",
+  "source": "Otsuka 2021: 7 de 10 astronautas durmieron menos"
+ },
+ {
+  "param": "sleep.decrease_total_h",
+  "value": -1.207,
+  "status": "medido",
+  "source": "Otsuka 2021: 454,0 a 381,6 min = -72,4 min"
+ },
+ {
+  "param": "sleep.decrease_sd_h",
+  "value": 0.33,
+  "status": "supuesto",
+  "source": "dispersion individual no publicada en lo que lei"
+ },
+ {
+  "param": "sleep.increase_total_h",
+  "value": 0.5,
+  "status": "sin fuente",
+  "source": "Otsuka 2021 no da la magnitud de los 3 que durmieron mas en lo que lei"
+ },
+ {
+  "param": "sleep.increase_sd_h",
+  "value": 0.25,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "sleep.tau_days",
+  "value": 21.6,
+  "status": "derivado",
+  "source": "constante de tiempo para que a los 21,1 dias la caida sea -45,1 min de -72,4 (Otsuka 2021)"
+ },
+ {
+  "param": "sleep.min",
+  "value": 2.0,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "sleep.max",
+  "value": 11.0,
+  "status": "supuesto",
+  "source": "limite fisico del simulador"
+ },
+ {
+  "param": "mood.scale_min",
+  "value": 1.0,
+  "status": "supuesto",
+  "source": "SUPUESTO DEL EQUIPO: escala diaria 1-5 sin respaldo publicado. Alternativa con umbrales abiertos: GHQ-12 Likert 0-36 (PMC13444004). DECISION PENDIENTE"
+ },
+ {
+  "param": "mood.scale_max",
+  "value": 5.0,
+  "status": "supuesto",
+  "source": "escala diaria 1 a 5"
+ },
+ {
+  "param": "mood.mean",
+  "value": 3.9,
+  "status": "sin fuente",
+  "source": "no hay rangos numericos con fuente"
+ },
+ {
+  "param": "mood.between_sd",
+  "value": 0.3,
+  "status": "sin fuente",
+  "source": "sin fuente"
+ },
+ {
+  "param": "mood.within_sd",
+  "value": 0.4,
+  "status": "sin fuente",
+  "source": "sin fuente"
+ },
+ {
+  "param": "mood.ar1",
+  "value": 0.4,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "mood.drift_mean",
+  "value": 0.0,
+  "status": "referencia",
+  "source": "analogo: animo estable a nivel de grupo en confinamiento (SIRIUS-19, PANAS, 120 d, Abeln et al., BMC Neurosci 2022, PMC9244384; Mars-500, POMS, 520 d, Wang et al., PLoS One 2014, PMC3973648). No hay dato en vuelo"
+ },
+ {
+  "param": "exercise.prescribed_days_per_week",
+  "value": 6,
+  "status": "medido",
+  "source": "Guilliams et al., Wyle, NTRS 20110016265: 6 dias por semana"
+ },
+ {
+  "param": "exercise.session_min",
+  "value": 150,
+  "status": "medido",
+  "source": "bloques de 2,5 h (1,5 h fuerza + 1 h aerobico), Guilliams et al."
+ },
+ {
+  "param": "exercise.aerobic_min",
+  "value": 60,
+  "status": "medido",
+  "source": "1 h aerobica por bloque, Guilliams et al."
+ },
+ {
+  "param": "exercise.rest_weekday",
+  "value": 6,
+  "status": "supuesto",
+  "source": "dia de la semana sin sesion (0 a 6)"
+ },
+ {
+  "param": "exercise.adherence_mean",
+  "value": 0.92,
+  "status": "supuesto",
+  "source": "probabilidad de completar una sesion programada; sin fuente"
+ },
+ {
+  "param": "exercise.adherence_between_sd",
+  "value": 0.05,
+  "status": "supuesto",
+  "source": "sin fuente"
+ },
+ {
+  "param": "exercise.minutes_noise_sd",
+  "value": 10,
+  "status": "supuesto",
+  "source": "variacion de los minutos completados"
+ },
+ {
+  "param": "exercise.fitness_loss_mean",
+  "value": 0.11,
+  "status": "medido",
+  "source": "NASA HRP R09: perdida media de fuerza y aptitud aerobica de 10 a 12 %"
+ },
+ {
+  "param": "exercise.fitness_p_loss_gt20",
+  "value": 0.12,
+  "status": "medido",
+  "source": "NASA HRP R09: entre 12 y 38 % pierde mas de 20 % segun el metodo; se usa el extremo inferior porque con media 11 % una lognormal no alcanza proporciones mayores (maximo ~14 %)"
+ },
+ {
+  "param": "exercise.fitness_tau_days",
+  "value": 60.0,
+  "status": "supuesto",
+  "source": "sin curva temporal publicada"
+ },
+ {
+  "param": "exercise.fitness_test_interval_days",
+  "value": 30,
+  "status": "supuesto",
+  "source": "prueba de aptitud cada 30 dias"
+ },
+ {
+  "param": "exercise.fitness_meas_noise_sd",
+  "value": 0.02,
+  "status": "supuesto",
+  "source": "error de la prueba (fraccion)"
+ },
+ {
+  "param": "corr.sleep_mood",
+  "value": 0.3,
+  "status": "supuesto",
+  "source": "hipotesis del equipo: sueno y animo se mueven juntos; sin fuente"
+ },
+ {
+  "param": "corr.sleep_hr",
+  "value": -0.2,
+  "status": "supuesto",
+  "source": "hipotesis: dormir menos sube la FC en reposo; sin fuente"
+ },
+ {
+  "param": "corr.mood_hr",
+  "value": -0.15,
+  "status": "supuesto",
+  "source": "hipotesis; sin fuente"
+ },
+ {
+  "param": "anomaly.first_day",
+  "value": 20,
+  "status": "supuesto",
+  "source": "primer dia de vuelo en que puede empezar una anomalia"
+ },
+ {
+  "param": "anomaly.infection_rate",
+  "value": 0.8,
+  "status": "supuesto",
+  "source": "eventos por mision y astronauta; sin fuente"
+ },
+ {
+  "param": "anomaly.infection_days_min",
+  "value": 3,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.infection_days_max",
+  "value": 6,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.infection_temp",
+  "value": 1.3,
+  "status": "supuesto",
+  "source": "pico de temperatura (C)"
+ },
+ {
+  "param": "anomaly.infection_hr",
+  "value": 10.0,
+  "status": "supuesto",
+  "source": "pico de FC (lpm)"
+ },
+ {
+  "param": "anomaly.infection_sleep",
+  "value": -1.0,
+  "status": "supuesto",
+  "source": "pico de sueno (h)"
+ },
+ {
+  "param": "anomaly.infection_mood",
+  "value": -0.8,
+  "status": "supuesto",
+  "source": "pico de animo"
+ },
+ {
+  "param": "anomaly.sleeploss_rate",
+  "value": 1.2,
+  "status": "supuesto",
+  "source": "eventos por mision"
+ },
+ {
+  "param": "anomaly.sleeploss_days_min",
+  "value": 3,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.sleeploss_days_max",
+  "value": 5,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.sleeploss_sleep",
+  "value": -2.5,
+  "status": "supuesto",
+  "source": "pico de sueno (h)"
+ },
+ {
+  "param": "anomaly.sleeploss_mood",
+  "value": -0.7,
+  "status": "supuesto",
+  "source": "pico de animo"
+ },
+ {
+  "param": "anomaly.sleeploss_hr",
+  "value": 5.0,
+  "status": "supuesto",
+  "source": "pico de FC (lpm)"
+ },
+ {
+  "param": "anomaly.bpspike_rate",
+  "value": 0.5,
+  "status": "supuesto",
+  "source": "eventos por mision"
+ },
+ {
+  "param": "anomaly.bpspike_days_min",
+  "value": 2,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.bpspike_days_max",
+  "value": 4,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.bpspike_sys",
+  "value": 28.0,
+  "status": "supuesto",
+  "source": "pico de sistolica (mmHg)"
+ },
+ {
+  "param": "anomaly.bpspike_dia",
+  "value": 16.0,
+  "status": "supuesto",
+  "source": "pico de diastolica (mmHg)"
+ },
+ {
+  "param": "anomaly.bpspike_hr",
+  "value": 6.0,
+  "status": "supuesto",
+  "source": "pico de FC (lpm)"
+ },
+ {
+  "param": "anomaly.spo2dip_rate",
+  "value": 0.4,
+  "status": "supuesto",
+  "source": "eventos por mision"
+ },
+ {
+  "param": "anomaly.spo2dip_days_min",
+  "value": 2,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.spo2dip_days_max",
+  "value": 4,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.spo2dip_spo2",
+  "value": -7.0,
+  "status": "supuesto",
+  "source": "pico de SpO2 (puntos)"
+ },
+ {
+  "param": "anomaly.spo2dip_hr",
+  "value": 6.0,
+  "status": "supuesto",
+  "source": "pico de FC (lpm)"
+ },
+ {
+  "param": "anomaly.moodlow_rate",
+  "value": 1.0,
+  "status": "supuesto",
+  "source": "eventos por mision"
+ },
+ {
+  "param": "anomaly.moodlow_days_min",
+  "value": 4,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.moodlow_days_max",
+  "value": 7,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.moodlow_mood",
+  "value": -1.3,
+  "status": "supuesto",
+  "source": "pico de animo"
+ },
+ {
+  "param": "anomaly.moodlow_sleep",
+  "value": -0.5,
+  "status": "supuesto",
+  "source": "pico de sueno (h)"
+ },
+ {
+  "param": "anomaly.exdrop_rate",
+  "value": 1.0,
+  "status": "supuesto",
+  "source": "eventos por mision"
+ },
+ {
+  "param": "anomaly.exdrop_days_min",
+  "value": 5,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.exdrop_days_max",
+  "value": 8,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.glucosehigh_rate",
+  "value": 0.3,
+  "status": "supuesto",
+  "source": "eventos por mision"
+ },
+ {
+  "param": "anomaly.glucosehigh_days",
+  "value": 2,
+  "status": "supuesto",
+  "source": "duracion"
+ },
+ {
+  "param": "anomaly.glucosehigh_glucose",
+  "value": 45.0,
+  "status": "supuesto",
+  "source": "pico de glucosa (mg/dl)"
+ },
+ {
+  "param": "anomaly.artifact_rate",
+  "value": 4.0,
+  "status": "supuesto",
+  "source": "lecturas erroneas de un dia por mision (NO son eventos de salud)"
+ },
+ {
+  "param": "anomaly.artifact_temp",
+  "value": 1.0,
+  "status": "supuesto",
+  "source": "error de temperatura (C)"
+ },
+ {
+  "param": "anomaly.artifact_hr",
+  "value": 25.0,
+  "status": "supuesto",
+  "source": "error de FC (lpm)"
+ },
+ {
+  "param": "anomaly.artifact_bp_sys",
+  "value": 35.0,
+  "status": "supuesto",
+  "source": "error de sistolica (mmHg)"
+ },
+ {
+  "param": "anomaly.artifact_spo2",
+  "value": -7.0,
+  "status": "supuesto",
+  "source": "error de SpO2 (puntos)"
+ }
+]

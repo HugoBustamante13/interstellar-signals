@@ -1,0 +1,20 @@
+variante,falsos_amarillo_o_peor_por_mision,falsos_rojo_por_mision,recall_alerta_nueva_amarillo_o_peor,recall_alerta_nueva_rojo,latencia_mediana_d,frac_eventos_con_alerta_ya_encendida,frac_dias_alerta_total,frac_dias_alerta_limpios,frac_dias_rojo_limpios
+A. v0.1 original,6.86,8.24,0.806,0.761,1.0,0.678,0.4543,0.3596,0.1913
+B. A + temperatura solo contra linea base en vuelo,7.03,7.71,0.838,0.78,1.0,0.607,0.3825,0.2772,0.1075
+C. B + salto confirmado al dia siguiente,4.46,3.48,0.797,0.681,1.0,0.455,0.3365,0.2424,0.0567
+D. C + linea base 28 d sin sacar dias marcados + banda de prediccion,3.43,1.41,0.755,0.551,1.0,0.376,0.2606,0.1658,0.019
+"E. D + banda 2,5 + salto 4 + ejercicio <3",1.32,0.78,0.6,0.338,2.0,0.189,0.1219,0.0363,0.0142
+F. v0.2 = E + FC < 50 amarillo (sin rojo de temperatura en vuelo),1.8,0.78,0.608,0.348,2.0,0.201,0.14,0.0574,0.0147
+"G. F + rojo fijo 38,5 C en vuelo con 1 lectura (supuesto) + meseta recortada en 38,0 C",2.24,1.25,0.643,0.413,2.0,0.222,0.1473,0.0591,0.0165
+"H. v0.3 PROPUESTA = G con 2 lecturas seguidas sobre 38,5 C",1.82,0.8,0.623,0.379,2.0,0.201,0.1419,0.0575,0.0148
+"v0.3 + PA sistolica < 90 amarillo (ESC, sin verificar)",3.55,0.98,0.672,0.412,2.0,0.254,0.1949,0.1153,0.0214
+"v0.3 con rojo fijo 38,0 C en vuelo (2 lecturas)",3.52,2.76,0.669,0.476,2.0,0.245,0.1762,0.0924,0.0512
+"v0.3 con rojo fijo 38,5 C en vuelo (3 lecturas)",1.8,0.78,0.614,0.367,2.0,0.201,0.1408,0.0574,0.0147
+"v0.3 con rojo fijo 39,0 C en vuelo (2 lecturas)",1.8,0.78,0.609,0.354,2.0,0.201,0.1402,0.0574,0.0147
+v0.3 con ejercicio <4,2.22,0.83,0.632,0.385,2.0,0.24,0.1754,0.0856,0.0155
+"v0.3 mas sensible: banda 2,0 + salto 3",2.45,1.32,0.755,0.559,2.0,0.22,0.1543,0.0639,0.0192
+"v0.3 menos sensible: banda 3,0",1.78,0.78,0.574,0.334,2.0,0.195,0.1396,0.0571,0.0146
+v0.3 sin 'dos amarillos = rojo',1.82,0.8,0.617,0.346,2.0,0.201,0.1419,0.0575,0.0143
+DIAGNOSTICO v0.3 sin rojo FC > 100,1.3,0.23,0.61,0.349,2.0,0.187,0.1307,0.0487,0.0056
+DIAGNOSTICO v0.3 sin amarillo por caida de SpO2 >= 3,1.45,0.8,0.584,0.363,2.0,0.154,0.1361,0.0572,0.0148
+DIAGNOSTICO v0.3 solo linea base personal (sin reglas absolutas ni ejercicio),0.21,0.19,0.338,0.288,2.0,0.019,0.0114,0.0007,0.0004

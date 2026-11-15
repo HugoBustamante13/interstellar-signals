@@ -1,0 +1,53 @@
+{
+ "data_origin": "synthetic",
+ "nota": "Evaluado contra anomalias SINTETICAS inventadas por el equipo: sirve para comparar configuraciones, no para afirmar sensibilidad clinica.",
+ "misiones_evaluadas": 200,
+ "episodios_falsos_por_mision_amarillo_o_peor": 1.82,
+ "episodios_falsos_por_mision_solo_rojo": 0.8,
+ "falsos_por_mision_que_incluyen_un_artefacto_amarillo_o_peor": 0.9,
+ "frac_days_yellow_plus_total": 0.1419,
+ "frac_days_red_total": 0.0786,
+ "frac_days_yellow_plus_clean": 0.0575,
+ "frac_days_red_clean": 0.0148,
+ "por_indicador_dias_limpios": {
+  "hr_rest": {
+   "amarillo_o_peor_dias_limpios": 0.0316,
+   "rojo_dias_limpios": 0.0093
+  },
+  "bp_sys": {
+   "amarillo_o_peor_dias_limpios": 0.0002,
+   "rojo_dias_limpios": 0.0001
+  },
+  "bp_dia": {
+   "amarillo_o_peor_dias_limpios": 0.0001,
+   "rojo_dias_limpios": 0.0
+  },
+  "spo2": {
+   "amarillo_o_peor_dias_limpios": 0.0005,
+   "rojo_dias_limpios": 0.0001
+  },
+  "temp": {
+   "amarillo_o_peor_dias_limpios": 0.0003,
+   "rojo_dias_limpios": 0.0002
+  },
+  "sleep": {
+   "amarillo_o_peor_dias_limpios": 0.0,
+   "rojo_dias_limpios": 0.0
+  },
+  "mood": {
+   "amarillo_o_peor_dias_limpios": 0.0,
+   "rojo_dias_limpios": 0.0
+  },
+  "exercise": {
+   "amarillo_o_peor_dias_limpios": 0.0219,
+   "rojo_dias_limpios": 0.0
+  },
+  "fitness": {
+   "amarillo_o_peor_dias_limpios": 0.0046,
+   "rojo_dias_limpios": 0.0046
+  }
+ },
+ "dias_de_vuelo": 180,
+ "grace_days": 3,
+ "metrica_recall": "alerta nueva (cambio a >= nivel o subida de nivel) dentro de [inicio, fin + grace]"
+}
