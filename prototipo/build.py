@@ -14,9 +14,13 @@ names = sys.argv[2] if len(sys.argv) > 2 else "SIM-001=Zamar,SIM-002=Carlos"
 data = HERE / "data.json"
 
 subprocess.run([sys.executable, str(HERE / "build_data.py"), sim, str(data), names], check=True)
+body = HERE / "body_mesh.json"  # malla del cuerpo 3D (MakeHuman, CC0)
+if not body.exists():
+    subprocess.run([sys.executable, str(HERE / "build_body.py")], check=True)
 html = (HERE / "template.html").read_text(encoding="utf-8")
-assert "__DATA__" in html, "template.html debe contener el marcador __DATA__"
+assert "__DATA__" in html and "__BODY__" in html, "template.html debe contener los marcadores __DATA__ y __BODY__"
 out = HERE / "index.html"
-out.write_text(html.replace("__DATA__", data.read_text(encoding="utf-8"), 1), encoding="utf-8")
+html = html.replace("__DATA__", data.read_text(encoding="utf-8"), 1).replace("__BODY__", body.read_text(encoding="utf-8"), 1)
+out.write_text(html, encoding="utf-8")
 data.unlink()
 print("Listo:", out)
