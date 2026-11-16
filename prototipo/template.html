@@ -890,6 +890,7 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
           <li><b>Esta página:</b> HTML y Three.js, sin framework; es lo que se ve en la demo. Los colores de cada día de la misión los calcula <code>semaforo.py</code> en el simulador y se incrustan al generar la página. Las lecturas en vivo y el chequeo se evalúan aquí, en el navegador, con los mismos límites clínicos y la misma banda personal.</li>
           <li><b>Demo en vivo:</b> un celular hace de camisa, anillo, reloj y entradas manuales, y envía lecturas simuladas.</li>
           <li><b>Backend:</b> FastAPI y SQLite. Sirve esta página, hace de puente con el celular en la demo en vivo y guarda los registros de la app en React.</li>
+          <li><b>Asistente de salud:</b> el botón «Asistente» abre un chat en inglés que responde sobre lo que tienes en pantalla (astronauta, día e indicadores con su color). Lo atiende el backend (<code>backend/chatbot.py</code>): un núcleo por reglas que funciona sin internet y, si hay clave y conexión, Claude reformula la misma respuesta. Necesita el backend encendido.</li>
           <li><b>App en React:</b> TypeScript, Vite, Tailwind y Recharts. Registra mediciones contra el backend y muestra su historial.</li>
           <li><b>Simulador:</b> Python. Genera las misiones sintéticas y evalúa el semáforo.</li>
         </ul>
