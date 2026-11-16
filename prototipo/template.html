@@ -320,6 +320,13 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .voice-btn[aria-pressed="true"] .vb-off { display: none; }
 body.on-splash .voice-btn { background: rgba(15, 17, 20, .6); border-color: rgba(240, 220, 196, .4); color: #f0dcc4; }
 body.on-splash .voice-btn[aria-pressed="true"] { background: #f0dcc4; color: #0f1114; border-color: #f0dcc4; }
+/* en el celular no caben el nombre, el botón con texto y la etiqueta de datos sintéticos: queda el ícono y la etiqueta */
+@media (max-width: 600px) {
+  .appbar { gap: 10px; }
+  .appbar > .wordmark { display: none; }
+  .voice-btn { padding: 0 10px; }
+  .voice-btn .vb-t { display: none; }
+}
 .burger { width: 40px; height: 40px; flex: none; border: 1px solid var(--line); border-radius: 2px; background: var(--surface); color: var(--ink);
   display: grid; place-content: center; gap: 4px; cursor: pointer; }
 .burger span { display: block; width: 18px; height: 2px; background: currentColor; border-radius: 2px; }
@@ -1841,7 +1848,9 @@ const Alertas = (() => {
     if (!btn) return;
     const noVoice = on && !!synth && !voices.length;
     btn.setAttribute("aria-pressed", String(on));
-    btn.querySelector(".vb-t").textContent = !on ? "Alertas de voz" : noVoice ? "Solo pitido" : "Voz activa";
+    const label = !on ? "Alertas de voz" : noVoice ? "Solo pitido" : "Voz activa";
+    btn.querySelector(".vb-t").textContent = label;
+    btn.setAttribute("aria-label", label); // en el celular el texto se oculta y queda solo el ícono
     btn.title = !on ? "Activa las alertas: en amarillo y rojo la app pita y dice en voz alta qué pasa."
       : noVoice ? "Este equipo no tiene una voz en español: las alertas solo pitan. Toca para apagarlas."
       : "Las alertas en amarillo y rojo pitan y se dicen en voz alta. Toca para apagarlas.";
