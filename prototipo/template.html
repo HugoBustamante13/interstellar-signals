@@ -308,7 +308,18 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.appbar .synthetic { margin-left: auto; }
+/* botón de alertas de voz: apagado por defecto; el navegador solo deja sonar la página después de un toque */
+.voice-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; flex: none;
+  border: 1px solid var(--line); border-radius: 2px; background: var(--surface); color: var(--ink); cursor: pointer;
+  font-family: var(--f-data); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.voice-btn:hover { border-color: var(--accent); color: var(--accent); }
+.voice-btn svg { width: 18px; height: 18px; flex: none; }
+.voice-btn .vb-on { display: none; }
+.voice-btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.voice-btn[aria-pressed="true"] .vb-on { display: inline; }
+.voice-btn[aria-pressed="true"] .vb-off { display: none; }
+body.on-splash .voice-btn { background: rgba(15, 17, 20, .6); border-color: rgba(240, 220, 196, .4); color: #f0dcc4; }
+body.on-splash .voice-btn[aria-pressed="true"] { background: #f0dcc4; color: #0f1114; border-color: #f0dcc4; }
 .burger { width: 40px; height: 40px; flex: none; border: 1px solid var(--line); border-radius: 2px; background: var(--surface); color: var(--ink);
   display: grid; place-content: center; gap: 4px; cursor: pointer; }
 .burger span { display: block; width: 18px; height: 2px; background: currentColor; border-radius: 2px; }
@@ -481,6 +492,17 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 .dot[data-st="w"] { background: transparent; border: 2px dashed var(--warn); }
 .pill[data-st="w"] { background: var(--warn-soft); color: var(--warn); }
 
+/* ---------- aviso de alerta (acompaña a la voz) ---------- */
+.alarm { position: fixed; z-index: 35; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); transform: translateX(-50%);
+  width: min(760px, calc(100% - 32px)); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 16px; align-items: center;
+  padding: 14px 16px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 6px solid var(--warn);
+  border-radius: 2px; box-shadow: 0 12px 32px rgba(0, 0, 0, .28); }
+.alarm[data-st="2"] { border-left-color: var(--crit); }
+.alarm p { margin: 0; font-size: 14px; line-height: 1.45; }
+.alarm-actions { display: flex; gap: 8px; }
+body:not([data-route="astronautas"]) .alarm { display: none !important; }
+@media (max-width: 640px) { .alarm { grid-template-columns: minmax(0, 1fr); } .alarm .pill { justify-self: start; } .alarm-actions { justify-content: flex-end; } }
+
 @media (prefers-reduced-motion: reduce) {
   .hot .ring { animation: none !important; }
   .scanbar { animation: none; opacity: 0; }
@@ -492,6 +514,14 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 <header class="appbar" id="appbar">
   <button class="burger" id="burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer"><span></span><span></span><span></span></button>
   <a class="wordmark" href="#">Interstellar Signals</a>
+  <button class="voice-btn" id="voiceBtn" type="button" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 9h4l5-4v14l-5-4H4z"/>
+      <g class="vb-on"><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></g>
+      <g class="vb-off"><path d="M17 9l5 6"/><path d="M22 9l-5 6"/></g>
+    </svg>
+    <span class="vb-t">Alertas de voz</span>
+  </button>
   <span class="synthetic" title="Generados por el simulador del equipo v0.3; no son datos de personas reales">DATOS SINTÉTICOS</span>
 </header>
 
@@ -613,7 +643,7 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
     </section>
 
     <div class="side">
-      <section class="card status" id="status" aria-live="polite"></section>
+      <section class="card status" id="status"></section>
       <section class="card inds" aria-label="Indicadores">
         <div class="inds-head"><span class="eyebrow">Signos y registros del día</span><span class="eyebrow" id="inds-sub"></span></div>
         <div id="indList"></div>
@@ -717,6 +747,7 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
           <li><b>Rojo, ahora:</b> sigues la guía y avisas al oficial médico, que decide los primeros pasos y puede pedir una ecografía.</li>
           <li><b>Rojo, cuando haya enlace:</b> el médico de vuelo en Tierra confirma o corrige. Cerca de la Tierra eso es casi inmediato; hacia Marte puede tardar, y por eso los primeros pasos se dan a bordo.</li>
         </ul>
+        <p>Cuando algo pasa a amarillo o rojo, la app avisa en pantalla y, si activas «Alertas de voz» en la barra superior, pita y te dice en voz alta qué indicador salió de su rango y qué hacer. El rojo se repite cada 30 segundos hasta que pulsas «Entendido».</p>
         <p>Dos de los cuatro problemas del reto no tienen una medida diaria directa. Las defensas se vigilan por señales (temperatura y una lista semanal) y el hueso por lo que lo protege (ejercicio de fuerza). La app lo dice así en cada tarjeta.</p>
       </section>
       <section id="doc-semaforo">
@@ -794,6 +825,15 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
     <p>NASA no publica criterios numéricos de alarma. Los límites clínicos son referencias de la Tierra (AHA, ADA, MSD, BTS); la banda personal (media ± 2,5 DE de 28 días), los 3 días seguidos y los saltos de 4 DE son supuestos del equipo.</p>
     <p>La guía de acción es orientativa y no reemplaza el criterio del oficial médico de la tripulación.</p>
   </footer>
+</div>
+
+<div class="alarm" id="alarm" role="alert" hidden>
+  <span class="pill" id="alarmPill"></span>
+  <p id="alarmText"></p>
+  <div class="alarm-actions">
+    <button class="btn" type="button" id="alarmRepeat">Repetir</button>
+    <button class="btn primary" type="button" id="alarmAck">Entendido</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
@@ -1009,6 +1049,8 @@ function pickZone(z) {
 function render() {
   const a = DATA[state.aid];
   const i = state.i;
+  // quién pidió este render: "vivo" (lectura del celular), "reproduccion" (un día más) o null (el usuario navega)
+  const trig = state.trigger; state.trigger = null;
   const d = a.day[i];
   const states = Object.fromEntries(ORDER.map(k => [k, indState(a, i, k)]));
 
@@ -1048,7 +1090,7 @@ function render() {
 
   Holo3D.update(zoneSt, IND[state.sel].zone, states);
   const ciCtx = `${state.aid}|${state.i}`;
-  if (render.ciCtx !== ciCtx) { render.ciCtx = ciCtx; const r = $("#ciResult"); if (r) r.innerHTML = ""; }
+  if (render.ciCtx !== ciCtx) { render.ciCtx = ciCtx; const r = $("#ciResult"); if (r) r.innerHTML = ""; Alertas.end("chequeo"); }
   $("#ci-eyebrow").textContent = `Chequeo de ${state.aid} · se compara con tu banda de ${dayLabel(d)}`;
 
   renderStatus(a, i, states);
@@ -1056,6 +1098,7 @@ function render() {
   renderFocus(states);
   renderChart();
   LiveLink.context();
+  Alertas.afterRender(alertInfo(a, i, states), trig);
 }
 
 // ---------- figura 3D (Three.js) ----------
@@ -1531,7 +1574,7 @@ function buildCheckin() {
       $("#ci-" + k).value = j >= 0 ? fmt(a[k][j], IND[k].nd) : "";
     }
   });
-  $("#ciClear").addEventListener("click", () => { CI.forEach(([k]) => { $("#ci-" + k).value = ""; setErr(k, ""); }); document.querySelectorAll("#ciSymptoms input").forEach(c => { c.checked = false; }); $("#ciResult").innerHTML = ""; });
+  $("#ciClear").addEventListener("click", () => { CI.forEach(([k]) => { $("#ci-" + k).value = ""; setErr(k, ""); }); document.querySelectorAll("#ciSymptoms input").forEach(c => { c.checked = false; }); $("#ciResult").innerHTML = ""; Alertas.end("chequeo"); });
   $("#ciForm").addEventListener("submit", (e) => { e.preventDefault(); evaluateCheckin(); });
 }
 function setErr(k, msg) { const f = $("#f-" + k); f.classList.toggle("bad", !!msg); const er = f.querySelector(".err"); er.textContent = msg; er.hidden = !msg; }
@@ -1576,8 +1619,8 @@ function evaluateCheckin() {
         : "Una sola señal no es alerta. Obsérvala: si sigue 3 días o aparece otra, avisa al oficial médico." });
   }
   const out = $("#ciResult");
-  if (bad) { out.innerHTML = ""; return; }
-  if (!res.length) { out.innerHTML = `<p class="chart-note">Escribe al menos una medición, marca una señal o usa «Leer de los sensores».</p>`; return; }
+  if (bad) { out.innerHTML = ""; Alertas.end("chequeo"); return; }
+  if (!res.length) { out.innerHTML = `<p class="chart-note">Escribe al menos una medición, marca una señal o usa «Leer de los sensores».</p>`; Alertas.end("chequeo"); return; }
   const rank = { 0: 0, w: 1, 1: 2, 2: 3 };
   const top = res.reduce((m, r) => rank[r.st] > rank[m] ? r.st : m, 0);
   const heads = { 0: "Todo dentro de lo esperado para ti", w: "Vigila: repite estas mediciones", 1: "Amarillo: atiende estos puntos", 2: "Rojo: avisa ahora al oficial médico" };
@@ -1594,6 +1637,12 @@ function evaluateCheckin() {
     <ul>${res.map(r => `<li><i class="dot" data-st="${r.st}"></i><span><b>${r.label || IND[r.k].name}</b> · ${r.val || `${fmt(r.v, IND[r.k].nd)} ${IND[r.k].unit}`}. ${esc(r.why)}</span></li>`).join("")}</ul>
     <div class="guide"><h3>Qué hacer</h3><ol>${steps.map(t => `<li>${t}</li>`).join("")}</ol>
     <p class="note">Orientativa. No reemplaza el criterio del oficial médico.</p></div></div>`;
+  // voz: solo lo que quedó en amarillo o rojo (lo de «vigilar» no alerta)
+  const flagged = res.filter(r => r.st === 1 || r.st === 2).sort((x, y) => y.st - x.st);
+  if (!flagged.length) { Alertas.end("chequeo"); return; }
+  const tC = res.find(r => r.k === "temp");
+  Alertas.checkin({ aid: state.aid, level: top, items: flagged.map(r => ({ k: r.k, st: r.st,
+    phrase: r.k === "immune" ? immunePhrase(sx, tC ? tC.v : null) : sayIndicator(a, i, r.k, r.v, r.st) })) });
 }
 
 // ---------- lecturas en vivo desde el celular ----------
@@ -1646,6 +1695,7 @@ const LiveLink = (() => {
     }
     state.live = { ultrasound: R.ultrasound || null, aid: R.astronaut, values: R.values || {}, symptoms: R.symptoms || [], scenario: R.scenario || "",
       at: new Date().toLocaleTimeString("es-CO", { hour12: false }), overall: null };
+    state.trigger = "vivo"; // la alerta de voz suena con esta lectura
     if (state.aid !== R.astronaut) chooseAstronaut(R.astronaut); else render();
     // abre la tendencia del indicador que más llama la atención
     const a = DATA[state.aid], hit = Object.keys(state.live.values).filter(k => IND[k])
@@ -1683,6 +1733,175 @@ const LiveLink = (() => {
   return api;
 })();
 
+// ---------- alertas de voz ----------
+// Cuando un signo sale de rango, la app pita, lo dice en voz alta y muestra un aviso con «Repetir» y «Entendido».
+// Voz del navegador (Web Speech) y pitido con Web Audio: sin archivos y sin internet si el equipo tiene voz en español.
+// No crea umbrales: lee el mismo estado que pinta la pantalla (indState, evalReading, absViolation).
+// Cuándo suena: lectura del celular en amarillo o rojo; en «Reproducir en vivo», solo cuando el estado sube
+// (y el rojo pausa la reproducción); al evaluar el chequeo. Navegar a mano por la línea de tiempo no suena.
+// El rojo se repite cada 30 s hasta «Entendido» o hasta que deja de estar en pantalla.
+const SAY = {
+  hr_rest: ["frecuencia cardíaca en reposo", "latidos por minuto"], bp_sys: ["presión sistólica", "milímetros de mercurio"],
+  bp_dia: ["presión diastólica", "milímetros de mercurio"], spo2: ["saturación de oxígeno", "por ciento"], temp: ["temperatura", "grados"],
+  glucose: ["glucosa en ayunas", "miligramos por decilitro"], sleep: ["sueño", "horas"], mood: ["ánimo", "sobre cinco"],
+  exercise: ["ejercicio", "minutos"], fitness: ["aptitud física", "por ciento de tu nivel previo al vuelo"],
+};
+// Frase hablada para un indicador en amarillo o rojo: valor con unidades en palabras y por qué alerta, sin citas.
+function sayIndicator(a, i, k, v, st) {
+  if (k === "exercise") return "llevas menos de tres sesiones completas de ejercicio en los últimos siete días";
+  const [name, unit] = SAY[k];
+  if (v == null) return `tu ${name} está en alerta`;
+  const at = (p) => (a[p + "_" + k] || [])[i] ?? null;
+  const lo = at("lo"), hi = at("hi"), base = at("base");
+  let where;
+  if (absViolation(k, v, a.day[i])) where = k === "spo2" || k === "fitness" || (k === "glucose" && v < 54) ? "por debajo del límite clínico" : "por encima del límite clínico";
+  else if (k === "hr_rest" && v < 50) where = "por debajo de 50, el límite de bradicardia";
+  else if (k === "spo2" && base != null && base - v >= 3) where = "3 puntos o más por debajo de tu línea base";
+  else if (k === "glucose") where = v >= 100 ? "por encima de 100 en ayunas" : "por debajo de 70";
+  else if (st === 2) where = "un cambio brusco frente a tu línea base";
+  else if (hi != null && v > hi) where = "por encima de tu banda personal";
+  else if (lo != null && v < lo) where = "por debajo de tu banda personal";
+  else where = "fuera de tu banda personal";
+  const num = `${fmt(v, IND[k].nd)} ${unit}`;
+  return k === "sleep" ? `dormiste ${num}, ${where}` : `tu ${name} está en ${num}, ${where}`;
+}
+function immunePhrase(n, t) {
+  return n < 2 && t != null && t >= 38 ? "tienes una señal de defensas junto con temperatura de 38 grados o más" : `tienes ${n} señales de defensas a la vez`;
+}
+// Lo que hay en alerta en lo que se está viendo: nivel (0, 1, 2) e indicadores en amarillo o rojo, el peor primero.
+function alertInfo(a, i, states) {
+  const L = state.live && state.live.aid === state.aid ? state.live : null;
+  const items = ORDER.filter(k => states[k].st >= 1).map(k => ({ k, st: states[k].st, phrase: sayIndicator(a, i, k, states[k].v, states[k].st) }));
+  if (L && L.immune && L.immune.st === 1) items.push({ k: "immune", st: 1, phrase: immunePhrase(L.immune.n, L.values.temp) });
+  items.sort((x, y) => y.st - x.st);
+  const overall = L ? L.overall : a.status[i];
+  return { aid: state.aid, level: Math.max(0, overall ?? 0, ...items.map(x => x.st)), items };
+}
+function alertText(info) {
+  const red = info.level === 2, top = info.items.slice(0, 2), rest = info.items.length - top.length;
+  const out = [red ? "Alerta roja." : "Atención."];
+  if (red && !info.items.some(x => x.st === 2) && info.items.length >= 2) out.push("Dos indicadores en amarillo a la vez cuentan como rojo.");
+  out.push(top.length ? `${info.aid}, ${top[0].phrase}.` : `${info.aid}, revisa tu panel: hay un indicador en alerta.`);
+  if (top[1]) out.push(`Además, ${top[1].phrase}.`);
+  if (rest > 0) out.push(rest === 1 ? "Hay un indicador más en alerta." : `Hay ${rest} indicadores más en alerta.`);
+  const act = top[0] && (ACTIONS[top[0].k] || [])[0];
+  out.push(red ? "Avisa ahora al oficial médico." : act ? act.replace(/<[^>]+>/g, "") : "Repite la medición y sigue la guía.");
+  return out.join(" ");
+}
+
+const Alertas = (() => {
+  const REPEAT_MS = 30000, STORE = "is.alertasVoz";
+  const synth = window.speechSynthesis || null, AC = window.AudioContext || window.webkitAudioContext;
+  const btn = $("#voiceBtn"), bar = $("#alarm");
+  let on = false, ctx = null, voices = [], active = null, last = null, rep = 0, speakT = 0;
+  try { on = localStorage.getItem(STORE) === "1"; } catch (e) { /* sin almacenamiento: queda apagado */ }
+
+  // voces en español; primero las de Colombia y Latinoamérica. Si una falla (p. ej. es en línea y no hay red), prueba la siguiente.
+  function loadVoices() {
+    if (!synth) return;
+    const rank = (v) => (/^es[-_]CO/i.test(v.lang) ? 0 : /^es[-_](MX|US|419)/i.test(v.lang) ? 1 : 2) + (v.localService ? 0 : 0.5);
+    voices = synth.getVoices().filter(v => /^es([-_]|$)/i.test(v.lang)).sort((x, y) => rank(x) - rank(y));
+    paintBtn();
+  }
+  if (synth) { loadVoices(); synth.addEventListener?.("voiceschanged", loadVoices); }
+
+  function speak(text, n = 0) {
+    if (!synth || !voices[n]) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = voices[n]; u.lang = voices[n].lang;
+    u.onerror = (e) => { if (!["interrupted", "canceled", "not-allowed"].includes(e.error)) speak(text, n + 1); };
+    synth.speak(u);
+  }
+  function audio() { if (!AC) return null; if (!ctx) ctx = new AC(); if (ctx.state === "suspended") ctx.resume(); return ctx; }
+  // rojo: tres pitidos agudos; amarillo: dos tonos suaves que bajan. Devuelve cuánto dura, para hablar después.
+  function beep(level) {
+    const c = audio(); if (!c) return 0;
+    const seq = level === 2 ? [[988, 0, .14], [988, .2, .14], [988, .4, .14]] : [[660, 0, .22], [523, .28, .3]];
+    const t0 = c.currentTime + 0.03;
+    for (const [f, at, dur] of seq) {
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = level === 2 ? "square" : "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(level === 2 ? 0.12 : 0.22, t0 + at + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
+      o.connect(g).connect(c.destination); o.start(t0 + at); o.stop(t0 + at + dur + 0.05);
+    }
+    const e = seq[seq.length - 1];
+    return Math.round((e[1] + e[2]) * 1000) + 150;
+  }
+  function play(al) {
+    if (!on || !al) return;
+    clearTimeout(speakT); if (synth) synth.cancel();
+    const ms = beep(al.level);
+    speakT = setTimeout(() => speak(al.text), ms);
+  }
+
+  function paintBtn() {
+    if (!btn) return;
+    const noVoice = on && !!synth && !voices.length;
+    btn.setAttribute("aria-pressed", String(on));
+    btn.querySelector(".vb-t").textContent = !on ? "Alertas de voz" : noVoice ? "Solo pitido" : "Voz activa";
+    btn.title = !on ? "Activa las alertas: en amarillo y rojo la app pita y dice en voz alta qué pasa."
+      : noVoice ? "Este equipo no tiene una voz en español: las alertas solo pitan. Toca para apagarlas."
+      : "Las alertas en amarillo y rojo pitan y se dicen en voz alta. Toca para apagarlas.";
+    $("#alarmRepeat").hidden = !on;
+  }
+  function show(al) {
+    bar.dataset.st = al.level;
+    const pill = $("#alarmPill");
+    pill.dataset.st = al.level;
+    pill.innerHTML = `<i class="dot" data-st="${al.level}"></i>${al.level === 2 ? "Rojo" : "Amarillo"}`;
+    $("#alarmText").textContent = al.text;
+    bar.hidden = false;
+  }
+  function end() {
+    active = null; clearInterval(rep); rep = 0; clearTimeout(speakT);
+    if (synth && on) synth.cancel();
+    bar.hidden = true;
+  }
+  const keyOf = (info) => `${info.aid}|${info.level}|${info.items.map(x => x.k + x.st).join(",")}`;
+  function raise(info, origin, tag = "") {
+    active = { key: keyOf(info) + tag, level: info.level, aid: info.aid, origin, text: alertText(info) };
+    show(active); play(active);
+    clearInterval(rep); rep = 0;
+    if (active.level === 2) rep = setInterval(() => play(active), REPEAT_MS);
+  }
+
+  btn.addEventListener("click", () => {
+    on = !on;
+    try { localStorage.setItem(STORE, on ? "1" : "0"); } catch (e) { /* sin almacenamiento: vale solo para esta visita */ }
+    paintBtn();
+    if (on) { const ms = beep(1); speakT = setTimeout(() => speak("Alertas de voz activadas."), ms); }
+    else { clearTimeout(speakT); if (synth) synth.cancel(); }
+  });
+  // el navegador solo deja sonar después de un toque en la página: el primero desbloquea el audio
+  const unlock = () => { if (on) audio(); };
+  addEventListener("pointerdown", unlock, { once: true, capture: true });
+  addEventListener("keydown", unlock, { once: true, capture: true });
+  $("#alarmRepeat").addEventListener("click", () => play(active));
+  $("#alarmAck").addEventListener("click", () => end());
+  paintBtn();
+
+  return {
+    // se llama al final de cada render con lo que hay en pantalla y quién lo pidió
+    afterRender(info, trig) {
+      const prev = last; last = info;
+      if (active && active.origin !== "chequeo" &&
+          !(info.aid === active.aid && info.level >= active.level && (active.origin !== "vivo" || state.live))) end();
+      if (info.level < 1) return;
+      if (trig === "vivo" && !(active && active.key === keyOf(info))) raise(info, "vivo");
+      else if (trig === "reproduccion" && prev && prev.aid === info.aid && info.level > prev.level) {
+        raise(info, "reproduccion");
+        if (info.level === 2) Live.stop(); // el rojo pausa la reproducción para que se escuche
+      }
+    },
+    checkin(info) { raise(info, "chequeo", "|" + Date.now()); },
+    end(origin) { if (active && (!origin || active.origin === origin)) end(); },
+    ack() { if (active) end(); },
+  };
+})();
+
 // ---------- navegación ----------
 const ROUTES = ["astronautas", "historial", "documentacion"];
 // ---------- reproducción "en vivo": la línea de tiempo avanza sola, en bucle ----------
@@ -1694,6 +1913,7 @@ const Live = (() => {
   function tick() {
     const n = DATA[state.aid].day.length;
     state.i = state.i >= n - 1 ? 0 : state.i + 1; // al llegar a MD 180 vuelve a L−30
+    state.trigger = "reproduccion"; // si el estado sube, suena la alerta (y el rojo pausa)
     render();
   }
   function paint(on) {
@@ -1703,7 +1923,9 @@ const Live = (() => {
   }
   const api = {
     get on() { return !!timer; },
-    start() { if (timer) return; paint(true); tick(); timer = setInterval(tick, STEP_MS); },
+    // volver a reproducir cuenta como «Entendido»: la alerta que estaba sonando se calla
+    // el temporizador va antes del primer día: si ese día ya salta un rojo, stop() lo encuentra y pausa
+    start() { if (timer) return; Alertas.ack(); paint(true); timer = setInterval(tick, STEP_MS); tick(); },
     stop() { if (!timer) return; clearInterval(timer); timer = 0; paint(false); },
     toggle() { timer ? api.stop() : api.start(); },
   };
@@ -1719,6 +1941,7 @@ function applyRoute() {
   if (route === "astronautas" && who && decodeURIComponent(who) !== state.aid) chooseAstronaut(decodeURIComponent(who));
   renderCrewNav(DATA[state.aid].day[state.i]);
   document.body.classList.toggle("on-splash", route === "inicio");
+  document.body.dataset.route = route;
   $("#view-inicio").hidden = route !== "inicio";
   for (const r of ROUTES) $("#view-" + r).hidden = route !== r;
   $("#footWrap").hidden = route === "inicio" || route === "documentacion";
