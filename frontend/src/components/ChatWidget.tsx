@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-// Asistente de salud a bordo. Widget flotante que habla con el backend (/api/chat).
-// El backend responde en modo híbrido: núcleo offline por reglas + capa LLM opcional.
-// Nota de honestidad (regla de SI del reto): se avisa en la UI que hay IA y que no
-// es consejo médico.
+// On-board health assistant. Floating widget that talks to the backend (/api/chat).
+// The backend answers in hybrid mode: offline rule-based core + optional LLM layer.
+// Honesty note (challenge SI rule): the UI states that AI is used and that it is
+// not medical advice. The bot speaks English; the rest of the app is in Spanish.
 
 const ASTRONAUT_ID = "default";
 
@@ -11,7 +11,7 @@ type Role = "user" | "assistant";
 interface Msg {
   role: Role;
   content: string;
-  source?: "llm" | "reglas";
+  source?: "llm" | "rules";
 }
 interface Alert {
   indicator: string;
@@ -19,7 +19,7 @@ interface Alert {
   value: number;
   unit: string;
   status: "attention" | "critical";
-  status_es: string;
+  status_en: string;
   recommendation: string | null;
 }
 interface StatusResp {
@@ -78,10 +78,10 @@ export default function ChatWidget() {
     return () => clearInterval(id);
   }, []);
 
-  // Al abrir por primera vez, siembra el saludo del asistente.
+  // On first open, seed the assistant's greeting.
   useEffect(() => {
     if (open && messages.length === 0 && status) {
-      setMessages([{ role: "assistant", content: status.greeting, source: "reglas" }]);
+      setMessages([{ role: "assistant", content: status.greeting, source: "rules" }]);
     }
   }, [open, status]);
 
@@ -112,8 +112,8 @@ export default function ChatWidget() {
         {
           role: "assistant",
           content:
-            "No pude conectar con el asistente. Revisa que el backend esté corriendo (uvicorn main:app --reload en /backend).",
-          source: "reglas",
+            "I couldn't reach the assistant. Make sure the backend is running (uvicorn main:app --reload in /backend).",
+          source: "rules",
         },
       ]);
     } finally {
@@ -126,7 +126,7 @@ export default function ChatWidget() {
       {/* Botón flotante */}
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="Abrir asistente de salud"
+        aria-label="Open health assistant"
         className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-sky-600 hover:bg-sky-500 shadow-lg flex items-center justify-center text-2xl"
       >
         {open ? "✕" : "💬"}
@@ -146,35 +146,35 @@ export default function ChatWidget() {
           {/* Header */}
           <div className="px-4 py-3 bg-slate-800 border-b border-slate-700">
             <div className="flex items-center justify-between">
-              <span className="font-semibold">🩺 Asistente de salud</span>
+              <span className="font-semibold">🩺 Health assistant</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">
-                {status?.llm_available ? "IA + offline" : "offline"}
+                {status?.llm_available ? "AI + offline" : "offline"}
               </span>
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Te ayuda a autoevaluarte. No es consejo médico.
+              Helps you self-assess. Not medical advice.
             </p>
           </div>
 
-          {/* Banner de alerta proactivo */}
+          {/* Proactive alert banner */}
           {alertCount > 0 && (
             <div
               className="px-4 py-2 text-xs border-b border-slate-700"
               style={{ backgroundColor: hasCritical ? "#7f1d1d" : "#78350f" }}
             >
               <span className="font-semibold">
-                {hasCritical ? "🔴" : "🟡"} {alertCount} indicador(es) fuera de verde:
+                {hasCritical ? "🔴" : "🟡"} {alertCount} indicator(s) outside green:
               </span>{" "}
               {status?.alerts.map((a) => a.label).join(", ")}.{" "}
-              <button className="underline" onClick={() => send("¿Qué hago?")}>
-                ¿Qué hago?
+              <button className="underline" onClick={() => send("What should I do?")}>
+                What should I do?
               </button>
             </div>
           )}
 
           {backendDown && (
             <div className="px-4 py-2 text-xs bg-amber-900/40 text-amber-300 border-b border-slate-700">
-              Backend no disponible. Inicia uvicorn en /backend para usar el asistente.
+              Backend unavailable. Start uvicorn in /backend to use the assistant.
             </div>
           )}
 
@@ -192,7 +192,7 @@ export default function ChatWidget() {
                 >
                   <div className="space-y-0.5">{renderText(m.content)}</div>
                   {m.role === "assistant" && m.source === "llm" && (
-                    <div className="mt-1 text-[10px] text-slate-500">redactado con IA</div>
+                    <div className="mt-1 text-[10px] text-slate-500">written with AI</div>
                   )}
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function ChatWidget() {
             {sending && (
               <div className="flex justify-start">
                 <div className="bg-slate-800 text-slate-400 rounded-2xl rounded-bl-sm px-3 py-2 text-sm">
-                  escribiendo…
+                  typing…
                 </div>
               </div>
             )}
@@ -232,7 +232,7 @@ export default function ChatWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Escribe tu pregunta…"
+              placeholder="Type your question…"
               className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
             />
             <button
@@ -240,7 +240,7 @@ export default function ChatWidget() {
               disabled={sending || !input.trim()}
               className="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white px-3 py-2 rounded-lg text-sm font-medium"
             >
-              Enviar
+              Send
             </button>
           </form>
         </div>
