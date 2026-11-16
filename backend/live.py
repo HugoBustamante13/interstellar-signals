@@ -30,7 +30,7 @@ def require_key(
         return
     given = (x_demo_key or k or "").encode()
     if not hmac.compare_digest(given, DEMO_KEY.encode()):
-        raise HTTPException(401, "Falta la clave de la demo o es incorrecta (?k=... en la URL).")
+        raise HTTPException(401, "Demo key missing or incorrect (?k=... in the URL).")
 
 
 router = APIRouter(prefix="/live", tags=["demo en vivo"])
@@ -81,16 +81,16 @@ class LiveContext(BaseModel):
 @router.post("", dependencies=[Depends(require_key)])
 def send_reading(payload: LiveReading):
     if not payload.values and not payload.symptoms and not payload.ultrasound:
-        raise HTTPException(422, "Envía al menos un valor, una señal o una ecografía.")
+        raise HTTPException(422, "Send at least one value, sign or ultrasound.")
     for key, value in payload.values.items():
         if key not in RANGES:
-            raise HTTPException(422, f"Indicador desconocido: {key}")
+            raise HTTPException(422, f"Unknown indicator: {key}")
         lo, hi = RANGES[key]
         if not math.isfinite(value) or not lo <= value <= hi:
-            raise HTTPException(422, f"{key} fuera de rango ({lo}–{hi}).")
+            raise HTTPException(422, f"{key} out of range ({lo}–{hi}).")
     unknown = set(payload.symptoms) - SYMPTOMS
     if unknown:
-        raise HTTPException(422, f"Señal desconocida: {', '.join(sorted(unknown))}")
+        raise HTTPException(422, f"Unknown sign: {', '.join(sorted(unknown))}")
     _state["seq"] += 1
     _state["reading"] = {**payload.model_dump(), "seq": _state["seq"], "received_at": utcnow()}
     return {"seq": _state["seq"]}

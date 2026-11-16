@@ -62,7 +62,7 @@ def create_record(
 ):
     if all(getattr(payload, f) is None for f in THRESHOLDS):
         raise HTTPException(
-            status_code=422, detail="Se requiere al menos un indicador."
+            status_code=422, detail="At least one indicator is required."
         )
     record = HealthRecord(**payload.model_dump(), timestamp=utcnow())
     session.add(record)

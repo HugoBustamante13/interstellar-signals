@@ -22,7 +22,7 @@ export default function IndicatorCard({ indicatorKey, value, onChange }: Props) 
           className="text-xs px-2 py-0.5 rounded-full"
           style={{ backgroundColor: color, color: "#0f172a" }}
         >
-          {status ?? "sin dato"}
+          {status ?? "no data"}
         </span>
       </div>
       <div className="flex items-center gap-2">

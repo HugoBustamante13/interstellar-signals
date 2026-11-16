@@ -27,32 +27,32 @@ THRESHOLDS = {
 
 RECOMMENDATIONS = {
     "heart_rate": {
-        Status.ATTENTION: "Descansa y vuelve a medir en 30 min. Evita ejercicio intenso.",
-        Status.CRITICAL: "Reporta a flight surgeon. Mantente en reposo y monitorea síntomas.",
+        Status.ATTENTION: "Rest and measure again in 30 min. Avoid intense exercise.",
+        Status.CRITICAL: "Report to the crew medical officer. Stay at rest and monitor your symptoms.",
     },
     "systolic_bp": {
-        Status.ATTENTION: "Hidrátate y evita cambios posturales bruscos.",
-        Status.CRITICAL: "Reporta a flight surgeon de inmediato.",
+        Status.ATTENTION: "Stay hydrated and avoid sudden changes of posture.",
+        Status.CRITICAL: "Report to the crew medical officer right away.",
     },
     "spo2": {
-        Status.ATTENTION: "Verifica calidad de aire de la cabina. Repite la medición.",
-        Status.CRITICAL: "Alerta inmediata — posible problema de oxigenación o del ambiente.",
+        Status.ATTENTION: "Check the cabin air quality. Repeat the measurement.",
+        Status.CRITICAL: "Immediate alert: possible oxygenation or environment problem.",
     },
     "body_temp": {
-        Status.ATTENTION: "Monitorea cada pocas horas. Hidrátate.",
-        Status.CRITICAL: "Posible infección o respuesta inmune — contacta a flight surgeon.",
+        Status.ATTENTION: "Monitor every few hours. Stay hydrated.",
+        Status.CRITICAL: "Possible infection or immune response: contact the crew medical officer.",
     },
     "glucose": {
-        Status.ATTENTION: "Ajusta próxima comida/snack. Vuelve a medir en 1-2 h.",
-        Status.CRITICAL: "Atiende de inmediato según protocolo médico personal.",
+        Status.ATTENTION: "Adjust your next meal or snack. Measure again in 1-2 h.",
+        Status.CRITICAL: "Act immediately following your personal medical protocol.",
     },
     "sleep_hours": {
-        Status.ATTENTION: "Prioriza higiene de sueño esta noche. Reduce cafeína.",
-        Status.CRITICAL: "Riesgo de deterioro cognitivo/ánimo — ajusta rutina y reporta si persiste.",
+        Status.ATTENTION: "Prioritize sleep hygiene tonight. Cut back on caffeine.",
+        Status.CRITICAL: "Risk of cognitive and mood decline: adjust your routine and report if it persists.",
     },
     "mood": {
-        Status.ATTENTION: "Usa recursos de apoyo conductual. Habla con la tripulación.",
-        Status.CRITICAL: "Contacta soporte de salud conductual de la misión.",
+        Status.ATTENTION: "Use behavioral support resources. Talk with your crew.",
+        Status.CRITICAL: "Contact the mission's behavioral health support.",
     },
 }
 

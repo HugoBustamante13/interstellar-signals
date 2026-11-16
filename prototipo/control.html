@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Control de demo · Interstellar Signals</title>
+<title>Demo control · Interstellar Signals</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%232b5784'/%3E%3Cellipse cx='16' cy='16' rx='15' ry='5' fill='none' stroke='%23c9b597' stroke-width='2' transform='rotate(-20 16 16)'/%3E%3C/svg%3E">
 <!-- fuentes locales (vendor/): la demo no depende de internet -->
 <link rel="stylesheet" href="vendor/fonts.css">
@@ -81,77 +81,77 @@ input[type="range"] { width: 100%; margin: 0; height: 34px; accent-color: var(--
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Interstellar Signals · control de demo</div>
-    <h1>Simulador de sensores</h1>
-    <span class="badge">DATOS SIMULADOS · NO SON SENSORES REALES</span>
+    <div class="eyebrow">Interstellar Signals · demo control</div>
+    <h1>Sensor simulator</h1>
+    <span class="badge">SIMULATED DATA · NOT REAL SENSORS</span>
   </header>
 
-  <section class="card" aria-label="Astronauta">
-    <div class="card-h"><span class="eyebrow">¿De quién son las lecturas?</span><span class="eyebrow" id="ctxDay"></span></div>
+  <section class="card" aria-label="Astronaut">
+    <div class="card-h"><span class="eyebrow">Whose readings are these?</span><span class="eyebrow" id="ctxDay"></span></div>
     <div class="seg" id="who"></div>
   </section>
 
-  <section class="card" aria-label="Escenarios">
-    <div class="card-h"><span class="eyebrow">Escenarios · ajustan y envían de una vez</span></div>
+  <section class="card" aria-label="Scenarios">
+    <div class="card-h"><span class="eyebrow">Scenarios · set and send at once</span></div>
     <div class="scen" id="scen"></div>
   </section>
 
   <section class="card" data-src="shirt" data-group="shirt">
-    <div class="card-h"><h2><i></i>Camisa</h2><label class="switch"><input type="checkbox" data-on="shirt" checked> enviar</label></div>
-    <p class="note">Lo que la camisa mide de forma continua. La presión no va aquí: la camisa solo la estima. La respiración es informativa.</p>
+    <div class="card-h"><h2><i></i>Shirt</h2><label class="switch"><input type="checkbox" data-on="shirt" checked> send</label></div>
+    <p class="note">What the shirt measures continuously. Blood pressure is not here: the shirt only estimates it. Breathing is informational.</p>
     <div class="fields" data-fields="shirt"></div>
   </section>
 
   <section class="card" data-src="ring" data-group="ring">
-    <div class="card-h"><h2><i></i>Anillo</h2><label class="switch"><input type="checkbox" data-on="ring" checked> enviar</label></div>
-    <p class="note">Oxímetro en el dedo: mide la saturación de oxígeno.</p>
+    <div class="card-h"><h2><i></i>Ring</h2><label class="switch"><input type="checkbox" data-on="ring" checked> send</label></div>
+    <p class="note">Finger oximeter: measures oxygen saturation.</p>
     <div class="fields" data-fields="ring"></div>
   </section>
 
   <section class="card" data-src="watch" data-group="watch">
-    <div class="card-h"><h2><i></i>Reloj</h2><label class="switch"><input type="checkbox" data-on="watch" checked> enviar</label></div>
-    <p class="note">Sueño por actigrafía y exposición a la luz. La luz es informativa: la app todavía no la evalúa.</p>
+    <div class="card-h"><h2><i></i>Watch</h2><label class="switch"><input type="checkbox" data-on="watch" checked> send</label></div>
+    <p class="note">Sleep from actigraphy and light exposure. Light is informational: the app does not evaluate it yet.</p>
     <div class="fields" data-fields="watch"></div>
   </section>
 
   <section class="card" data-src="manual" data-group="manual">
-    <div class="card-h"><h2><i></i>Manual</h2><label class="switch"><input type="checkbox" data-on="manual" checked> enviar</label></div>
-    <p class="note">Lo que el astronauta escribe en su chequeo: presión con manguito, ánimo y ejercicio.</p>
+    <div class="card-h"><h2><i></i>Manual</h2><label class="switch"><input type="checkbox" data-on="manual" checked> send</label></div>
+    <p class="note">What the astronaut writes in their check-in: cuff blood pressure, mood and exercise.</p>
     <div class="fields" data-fields="manual">
       <div class="sub off" id="gluSub">
-        <label class="switch"><input type="checkbox" id="gluOn"> incluir glucosa en ayunas (semanal)</label>
+        <label class="switch"><input type="checkbox" id="gluOn"> include fasting glucose (weekly)</label>
         <div data-fields="glucose"></div>
       </div>
       <div class="sub">
-        <span class="eyebrow">Señales de defensas</span>
+        <span class="eyebrow">Immune signs</span>
         <div class="checks" id="sx">
-          <label><input type="checkbox" value="piel"> Erupción o lesión nueva en la piel</label>
-          <label><input type="checkbox" value="boca"> Llagas en la boca o los labios</label>
-          <label><input type="checkbox" value="resp"> Congestión, tos o dolor de garganta</label>
-          <label><input type="checkbox" value="herida"> Una herida que tarda en cerrar</label>
+          <label><input type="checkbox" value="piel"> New rash or skin injury</label>
+          <label><input type="checkbox" value="boca"> Sores in the mouth or on the lips</label>
+          <label><input type="checkbox" value="resp"> Congestion, cough or sore throat</label>
+          <label><input type="checkbox" value="herida"> A wound that is slow to close</label>
         </div>
       </div>
     </div>
   </section>
 
   <section class="card off" data-src="echo" data-group="echo">
-    <div class="card-h"><h2><i></i>Ultrasound 2</h2><label class="switch"><input type="checkbox" data-on="echo"> enviar</label></div>
-    <p class="note">No vigila a diario: se usa cuando hay rojo. La app no interpreta la imagen; registra lo que anota quien hace la ecografía.</p>
+    <div class="card-h"><h2><i></i>Ultrasound 2</h2><label class="switch"><input type="checkbox" data-on="echo"> send</label></div>
+    <p class="note">Not daily monitoring: used when there is a red status. The app does not interpret the image; it records what the person doing the ultrasound notes.</p>
     <div class="fields">
-      <div class="field"><span class="eyebrow">Qué se examinó</span>
-        <div class="seg" id="echoExam"><button type="button" data-v="corazon" aria-pressed="true">Corazón</button><button type="button" data-v="vasos" aria-pressed="false">Vasos</button><button type="button" data-v="abdomen" aria-pressed="false">Abdomen</button><button type="button" data-v="ojo" aria-pressed="false">Ojo</button></div></div>
-      <div class="field"><span class="eyebrow">Resultado anotado</span>
-        <div class="seg" id="echoRes"><button type="button" data-v="sin_hallazgos" aria-pressed="true">Sin hallazgos</button><button type="button" data-v="hallazgo" aria-pressed="false">Hallazgo</button><button type="button" data-v="repetir" aria-pressed="false">Repetir</button></div></div>
+      <div class="field"><span class="eyebrow">What was examined</span>
+        <div class="seg" id="echoExam"><button type="button" data-v="corazon" aria-pressed="true">Heart</button><button type="button" data-v="vasos" aria-pressed="false">Vessels</button><button type="button" data-v="abdomen" aria-pressed="false">Abdomen</button><button type="button" data-v="ojo" aria-pressed="false">Eye</button></div></div>
+      <div class="field"><span class="eyebrow">Recorded result</span>
+        <div class="seg" id="echoRes"><button type="button" data-v="sin_hallazgos" aria-pressed="true">No findings</button><button type="button" data-v="hallazgo" aria-pressed="false">Finding</button><button type="button" data-v="repetir" aria-pressed="false">Repeat</button></div></div>
     </div>
   </section>
 </div>
 
 <div class="bar">
   <div class="bar-in">
-    <div class="stat" id="stat" data-s=""><b id="statMsg">Conectando…</b><label class="switch"><input type="checkbox" id="auto"> enviar al mover</label></div>
+    <div class="stat" id="stat" data-s=""><b id="statMsg">Connecting…</b><label class="switch"><input type="checkbox" id="auto"> send on change</label></div>
     <div class="bar-row">
-      <button class="send" id="send" type="button">Enviar lectura</button>
-      <button class="ghost" id="clear" type="button" title="La web vuelve a mostrar los datos simulados de la misión">Quitar lectura</button>
+      <button class="send" id="send" type="button">Send reading</button>
+      <button class="ghost" id="clear" type="button" title="The web goes back to showing the mission's simulated data">Clear reading</button>
     </div>
   </div>
 </div>
@@ -167,32 +167,33 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const FIELDS = {
-  hr_rest:  { g: "shirt",   name: "Frecuencia cardíaca en reposo", unit: "lpm",   min: 35,  max: 160, step: 1,   def: 68,   nd: 0 },
-  resp:     { g: "shirt",   name: "Frecuencia respiratoria",       unit: "rpm",   min: 6,   max: 40,  step: 1,   def: 15,   nd: 0 },
-  temp:     { g: "shirt",   name: "Temperatura",                   unit: "°C",    min: 35,  max: 40,  step: 0.1, def: 36.8, nd: 1 },
-  spo2:     { g: "ring",    name: "Saturación de oxígeno",         unit: "%",     min: 80,  max: 100, step: 1,   def: 97,   nd: 0 },
-  sleep:    { g: "watch",   name: "Sueño de anoche",               unit: "h",     min: 0,   max: 12,  step: 0.1, def: 6.5,  nd: 1 },
-  light:    { g: "watch",   name: "Luz recibida hoy",              unit: "lux",   min: 0,   max: 2000, step: 10, def: 300,  nd: 0 },
-  bp_sys:   { g: "manual",  name: "Presión sistólica",             unit: "mmHg",  min: 70,  max: 220, step: 1,   def: 118,  nd: 0 },
-  bp_dia:   { g: "manual",  name: "Presión diastólica",            unit: "mmHg",  min: 40,  max: 140, step: 1,   def: 62,   nd: 0 },
-  mood:     { g: "manual",  name: "Ánimo",                         unit: "/ 5",   min: 1,   max: 5,   step: 0.5, def: 4,    nd: 1 },
-  exercise: { g: "manual",  name: "Ejercicio de hoy",              unit: "min",   min: 0,   max: 180, step: 5,   def: 90,   nd: 0 },
-  glucose:  { g: "glucose", name: "Glucosa en ayunas",             unit: "mg/dL", min: 40,  max: 200, step: 1,   def: 90,   nd: 0 },
+  hr_rest:  { g: "shirt",   name: "Resting heart rate",            unit: "bpm",   min: 35,  max: 160, step: 1,   def: 68,   nd: 0 },
+  resp:     { g: "shirt",   name: "Breathing rate",                unit: "br/min", min: 6,  max: 40,  step: 1,   def: 15,   nd: 0 },
+  temp:     { g: "shirt",   name: "Temperature",                   unit: "°C",    min: 35,  max: 40,  step: 0.1, def: 36.8, nd: 1 },
+  spo2:     { g: "ring",    name: "Oxygen saturation",             unit: "%",     min: 80,  max: 100, step: 1,   def: 97,   nd: 0 },
+  sleep:    { g: "watch",   name: "Sleep last night",              unit: "h",     min: 0,   max: 12,  step: 0.1, def: 6.5,  nd: 1 },
+  light:    { g: "watch",   name: "Light received today",          unit: "lux",   min: 0,   max: 2000, step: 10, def: 300,  nd: 0 },
+  bp_sys:   { g: "manual",  name: "Systolic blood pressure",       unit: "mmHg",  min: 70,  max: 220, step: 1,   def: 118,  nd: 0 },
+  bp_dia:   { g: "manual",  name: "Diastolic blood pressure",      unit: "mmHg",  min: 40,  max: 140, step: 1,   def: 62,   nd: 0 },
+  mood:     { g: "manual",  name: "Mood",                          unit: "/ 5",   min: 1,   max: 5,   step: 0.5, def: 4,    nd: 1 },
+  exercise: { g: "manual",  name: "Exercise today",                unit: "min",   min: 0,   max: 180, step: 5,   def: 90,   nd: 0 },
+  glucose:  { g: "glucose", name: "Fasting glucose",               unit: "mg/dL", min: 40,  max: 200, step: 1,   def: 90,   nd: 0 },
 };
 // Escenarios: parten de la línea base del astronauta y cambian solo lo que se indica.
+// `tag` es el nombre que viaja al servidor (se conserva tal cual); `name` es lo que se ve.
 const SCEN = [
-  { id: "normal",   name: "Todo normal",          hint: "valores en su línea base", set: {} },
-  { id: "bp",       name: "Presión muy alta",     hint: "186 / 122 mmHg",           set: { bp_sys: 186, bp_dia: 122 } },
-  { id: "hr",       name: "Corazón acelerado",    hint: "112 lpm en reposo",        set: { hr_rest: 112 } },
-  { id: "spo2",     name: "Oxígeno bajo",         hint: "SpO₂ 88 %",                set: { spo2: 88 } },
-  { id: "fever",    name: "Fiebre con síntomas",  hint: "38,7 °C y congestión",     set: { temp: 38.7 }, sx: ["resp"] },
-  { id: "mind",     name: "Mala noche y ánimo bajo", hint: "3,5 h de sueño · ánimo 1,5", set: { sleep: 3.5, mood: 1.5 } },
-  { id: "skin",     name: "Señales en la piel",   hint: "erupción y llagas",        set: {}, sx: ["piel", "boca"] },
-  { id: "lazy",     name: "Sin ejercicio",        hint: "0 minutos hoy",            set: { exercise: 0 } },
+  { id: "normal",   tag: "Todo normal",          name: "Normal",                       hint: "values at baseline",          set: {} },
+  { id: "bp",       tag: "Presión muy alta",     name: "Very high blood pressure",     hint: "186 / 122 mmHg",              set: { bp_sys: 186, bp_dia: 122 } },
+  { id: "hr",       tag: "Corazón acelerado",    name: "High heart rate",              hint: "112 bpm at rest",             set: { hr_rest: 112 } },
+  { id: "spo2",     tag: "Oxígeno bajo",         name: "Low oxygen",                   hint: "SpO₂ 88 %",                   set: { spo2: 88 } },
+  { id: "fever",    tag: "Fiebre con síntomas",  name: "Fever",                        hint: "38.7 °C and congestion",      set: { temp: 38.7 }, sx: ["resp"] },
+  { id: "mind",     tag: "Mala noche y ánimo bajo", name: "Bad night and low mood",    hint: "3.5 h sleep · mood 1.5",      set: { sleep: 3.5, mood: 1.5 } },
+  { id: "skin",     tag: "Señales en la piel",   name: "Skin and mouth signs",         hint: "rash and mouth sores",        set: {}, sx: ["piel", "boca"] },
+  { id: "lazy",     tag: "Sin ejercicio",        name: "No exercise",                  hint: "0 minutes today",             set: { exercise: 0 } },
 ];
 
 let ctx = null, who = null;
-const fmt = (v, nd) => Number(v).toLocaleString("es-CO", { minimumFractionDigits: nd, maximumFractionDigits: nd });
+const fmt = (v, nd) => Number(v).toLocaleString("en-US", { minimumFractionDigits: nd, maximumFractionDigits: nd });
 
 for (const [k, F] of Object.entries(FIELDS)) {
   document.querySelector(`[data-fields="${F.g}"]`).insertAdjacentHTML(F.g === "manual" ? "afterbegin" : "beforeend", `
@@ -212,7 +213,7 @@ function toBase() {
   for (const k of Object.keys(FIELDS)) {
     setVal(k, baseOf(k));
     const b = ctx && who && ctx.astronauts[who] ? ctx.astronauts[who][k] : null;
-    $("#b-" + k).textContent = b == null ? "" : `su línea base: ${fmt(b, FIELDS[k].nd)}`;
+    $("#b-" + k).textContent = b == null ? "" : `baseline: ${fmt(b, FIELDS[k].nd)}`;
   }
   document.querySelectorAll("#sx input").forEach(c => { c.checked = false; });
 }
@@ -221,11 +222,11 @@ function paintWho() {
   if (!who || !names.includes(who)) who = (ctx && names.includes(ctx.selected)) ? ctx.selected : names[0];
   // los nombres llegan del servidor: se escapan antes de meterlos en el HTML
   $("#who").innerHTML = names.map(n => `<button type="button" data-n="${esc(n)}" aria-pressed="${n === who}">${esc(n)}</button>`).join("");
-  $("#ctxDay").textContent = ctx && ctx.day ? `la web está en ${ctx.day}` : "";
+  $("#ctxDay").textContent = ctx && ctx.day ? `the web is on ${ctx.day}` : "";
 }
 
 function status(kind, msg) { $("#stat").dataset.s = kind; $("#statMsg").textContent = msg; }
-const hhmmss = () => new Date().toLocaleTimeString("es-CO", { hour12: false });
+const hhmmss = () => new Date().toLocaleTimeString("en-US", { hour12: false });
 
 async function loadCtx(first) {
   try {
@@ -234,9 +235,9 @@ async function loadCtx(first) {
     const c = await r.json();
     const changed = JSON.stringify(c) !== JSON.stringify(ctx);
     ctx = c;
-    if (first || changed) { paintWho(); if (first) toBase(); else for (const k of Object.keys(FIELDS)) { const b = ctx && ctx.astronauts[who] ? ctx.astronauts[who][k] : null; $("#b-" + k).textContent = b == null ? "" : `su línea base: ${fmt(b, FIELDS[k].nd)}`; } }
-    if (first) status("ok", ctx ? "Conectado con la web" : "Conectado · abre la web en el PC");
-  } catch (e) { if (first) { paintWho(); toBase(); } status("err", "Sin conexión con el backend"); }
+    if (first || changed) { paintWho(); if (first) toBase(); else for (const k of Object.keys(FIELDS)) { const b = ctx && ctx.astronauts[who] ? ctx.astronauts[who][k] : null; $("#b-" + k).textContent = b == null ? "" : `baseline: ${fmt(b, FIELDS[k].nd)}`; } }
+    if (first) status("ok", ctx ? "Connected to the web" : "Connected · open the web page on the PC");
+  } catch (e) { if (first) { paintWho(); toBase(); } status("err", "No connection to the backend"); }
 }
 
 function payload(scenario) {
@@ -252,13 +253,13 @@ function payload(scenario) {
 }
 async function send(scenario) {
   const body = payload(scenario);
-  if (!Object.keys(body.values).length && !body.symptoms.length && !body.ultrasound) { status("err", "Activa al menos un apartado"); return; }
+  if (!Object.keys(body.values).length && !body.symptoms.length && !body.ultrasound) { status("err", "Turn on at least one section"); return; }
   try {
     const r = await fetch(API + "/live", { method: "POST", headers: { "Content-Type": "application/json", "X-Demo-Key": DEMO_KEY }, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error(r.status === 401 ? "falta la clave de la demo (?k=... en la URL)" : (await r.json()).detail || r.status);
+    if (!r.ok) throw new Error(r.status === 401 ? "demo key missing (?k=... in the URL)" : (await r.json()).detail || r.status);
     const j = await r.json();
-    status("ok", `Enviado a las ${hhmmss()} · lectura n.º ${j.seq}`);
-  } catch (e) { status("err", `No se envió: ${e.message}`); }
+    status("ok", `Sent at ${hhmmss()} · reading #${j.seq}`);
+  } catch (e) { status("err", `Not sent: ${e.message}`); }
 }
 
 let autoT = 0;
@@ -289,8 +290,8 @@ for (const id of ["echoExam", "echoRes"]) $("#" + id).addEventListener("click", 
 });
 $("#send").addEventListener("click", () => send());
 $("#clear").addEventListener("click", async () => {
-  try { const r = await fetch(API + "/live", { method: "DELETE", headers: { "X-Demo-Key": DEMO_KEY } }); if (!r.ok) throw new Error(r.status); status("ok", `La web volvió a los datos de la misión · ${hhmmss()}`); }
-  catch (e) { status("err", e.message === "401" ? "No se pudo quitar: falta la clave de la demo (?k=...)" : "No se pudo quitar la lectura"); }
+  try { const r = await fetch(API + "/live", { method: "DELETE", headers: { "X-Demo-Key": DEMO_KEY } }); if (!r.ok) throw new Error(r.status); status("ok", `The web went back to the mission data · ${hhmmss()}`); }
+  catch (e) { status("err", e.message === "401" ? "Could not clear: demo key missing (?k=...)" : "Could not clear the reading"); }
 });
 
 for (const k of Object.keys(FIELDS)) paint(k);
