@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Control de demo · Interstellar Signals</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@300;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='9' fill='%232b5784'/%3E%3Cellipse cx='16' cy='16' rx='15' ry='5' fill='none' stroke='%23c9b597' stroke-width='2' transform='rotate(-20 16 16)'/%3E%3C/svg%3E">
+<!-- fuentes locales (vendor/): la demo no depende de internet -->
+<link rel="stylesheet" href="vendor/fonts.css">
 <style>
 /* Página de control para el celular: hace de camisa, reloj y entradas manuales durante la demo.
    Envía lecturas SIMULADAS al backend (/live); la web las recoge y las evalúa con el semáforo. */
@@ -159,8 +159,12 @@ input[type="range"] { width: 100%; margin: 0; height: 34px; accent-color: var(--
 <script>
 // La página se sirve desde el backend (/demo/control.html), así que la API está en el mismo origen.
 // Para abrirla desde otro sitio: control.html?api=http://IP-DEL-PC:8000
-const API = (new URLSearchParams(location.search).get("api") || location.origin).replace(/\/$/, "");
+const QS = new URLSearchParams(location.search);
+const API = (QS.get("api") || location.origin).replace(/\/$/, "");
+// clave de la demo: si el backend arrancó con DEMO_KEY, abre esta página con ?k=LA-CLAVE
+const DEMO_KEY = QS.get("k") || "";
 const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const FIELDS = {
   hr_rest:  { g: "shirt",   name: "Frecuencia cardíaca en reposo", unit: "lpm",   min: 35,  max: 160, step: 1,   def: 68,   nd: 0 },
@@ -215,7 +219,8 @@ function toBase() {
 function paintWho() {
   const names = ctx && Object.keys(ctx.astronauts).length ? Object.keys(ctx.astronauts) : ["Zamar", "Carlos"];
   if (!who || !names.includes(who)) who = (ctx && names.includes(ctx.selected)) ? ctx.selected : names[0];
-  $("#who").innerHTML = names.map(n => `<button type="button" data-n="${n}" aria-pressed="${n === who}">${n}</button>`).join("");
+  // los nombres llegan del servidor: se escapan antes de meterlos en el HTML
+  $("#who").innerHTML = names.map(n => `<button type="button" data-n="${esc(n)}" aria-pressed="${n === who}">${esc(n)}</button>`).join("");
   $("#ctxDay").textContent = ctx && ctx.day ? `la web está en ${ctx.day}` : "";
 }
 
@@ -249,8 +254,8 @@ async function send(scenario) {
   const body = payload(scenario);
   if (!Object.keys(body.values).length && !body.symptoms.length && !body.ultrasound) { status("err", "Activa al menos un apartado"); return; }
   try {
-    const r = await fetch(API + "/live", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error((await r.json()).detail || r.status);
+    const r = await fetch(API + "/live", { method: "POST", headers: { "Content-Type": "application/json", "X-Demo-Key": DEMO_KEY }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(r.status === 401 ? "falta la clave de la demo (?k=... en la URL)" : (await r.json()).detail || r.status);
     const j = await r.json();
     status("ok", `Enviado a las ${hhmmss()} · lectura n.º ${j.seq}`);
   } catch (e) { status("err", `No se envió: ${e.message}`); }
@@ -284,8 +289,8 @@ for (const id of ["echoExam", "echoRes"]) $("#" + id).addEventListener("click", 
 });
 $("#send").addEventListener("click", () => send());
 $("#clear").addEventListener("click", async () => {
-  try { const r = await fetch(API + "/live", { method: "DELETE" }); if (!r.ok) throw new Error(r.status); status("ok", `La web volvió a los datos de la misión · ${hhmmss()}`); }
-  catch (e) { status("err", "No se pudo quitar la lectura"); }
+  try { const r = await fetch(API + "/live", { method: "DELETE", headers: { "X-Demo-Key": DEMO_KEY } }); if (!r.ok) throw new Error(r.status); status("ok", `La web volvió a los datos de la misión · ${hhmmss()}`); }
+  catch (e) { status("err", e.message === "401" ? "No se pudo quitar: falta la clave de la demo (?k=...)" : "No se pudo quitar la lectura"); }
 });
 
 for (const k of Object.keys(FIELDS)) paint(k);
