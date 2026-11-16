@@ -5,7 +5,12 @@ Página única (HTML + Three.js) para que cada astronauta **se autoevalúe**: ch
 **Todos los datos son sintéticos** (generados por `simulador/`). No es un dispositivo médico ni está validado clínicamente.
 
 ## Abrirlo
-Abre `prototipo/index.html` en el navegador (doble clic). Necesita internet solo para cargar Three.js desde jsDelivr.
+Abre `prototipo/index.html` en el navegador (doble clic). No necesita internet: Three.js y las fuentes están en
+`prototipo/vendor/` (si faltara `three.min.js`, la página lo intenta desde jsDelivr).
+
+- `vendor/three.min.js`: Three.js r147, licencia MIT.
+- `vendor/fonts.css` y `vendor/fonts/`: Big Shoulders Display, IBM Plex Mono e IBM Plex Sans (latin y latin-ext),
+  licencia SIL Open Font License 1.1 (`vendor/fonts/OFL-*.txt`).
 
 ## Modificarlo
 1. Edita `prototipo/template.html` (no `index.html`, que se genera).
@@ -18,15 +23,24 @@ Abre `prototipo/index.html` en el navegador (doble clic). Necesita internet solo
 ## Demo en vivo desde el celular
 El celular hace de camisa, reloj y entradas manuales: envía lecturas **simuladas** y la web reacciona al instante.
 
-1. PC y celular en la misma red Wi-Fi.
-2. En el PC: `cd backend` y `venv\Scripts\python -m uvicorn main:app --host 0.0.0.0 --port 8000`
-   (si Windows pregunta por el firewall, permite el acceso en redes privadas).
-3. En el PC abre `http://localhost:8000/demo/#astronautas`.
-4. En el celular abre `http://IP-DEL-PC:8000/demo/control.html` (la IP sale con `ipconfig`).
+1. PC y celular en la misma red. **En el evento, usa un hotspot propio** (el del celular o el del PC): las Wi-Fi
+   de los eventos suelen aislar a los equipos entre sí y el celular no llega al PC.
+2. En el PC, con una clave corta de tu elección (evita que otro en la red mande lecturas a tu pantalla):
+   ```
+   cd backend
+   set DEMO_KEY=luna42
+   venv\Scripts\python -m uvicorn main:app --host 0.0.0.0 --port 8000
+   ```
+   En PowerShell: `$env:DEMO_KEY="luna42"`. Si Windows pregunta por el firewall, permite el acceso en redes privadas.
+3. En el PC abre `http://localhost:8000/demo/?k=luna42#astronautas` y enciende el sonido de las alarmas.
+4. En el celular abre `http://IP-DEL-PC:8000/demo/control.html?k=luna42` (la IP sale con `ipconfig`).
 5. Toca un escenario o mueve los controles y pulsa «Enviar lectura».
 
 - `control.html` es la página del celular; `backend/live.py` es el puente (en memoria, no guarda nada).
+- Sin `DEMO_KEY`, `/live` queda abierto (cómodo para probar en casa); con ella, enviar o quitar lecturas sin la
+  clave responde 401 y el celular lo dice en su barra de estado.
 - Abierto con doble clic (`file://`), `index.html` no escucha al celular: tiene que servirse desde el backend.
+- Pruebas del puente: `cd backend && venv\Scripts\python -m pip install -r requirements-dev.txt && venv\Scripts\python -m pytest -q`.
 
 ## Modelo 3D del cuerpo
 La figura 3D usa la malla base de **MakeHuman** (`hm08`), publicada como **CC0 1.0** en septiembre de 2020
