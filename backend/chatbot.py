@@ -1,19 +1,25 @@
 """
-Asistente de salud (chatbot) para el Astronaut Health Monitor.
+On-board health assistant (chatbot) for the Astronaut Health Monitor.
 
-Diseño HÍBRIDO:
-- Núcleo OFFLINE por reglas: siempre responde, sin internet ni API key, usando la
-  base de conocimiento de este archivo + el contexto real del astronauta (último
-  registro, semáforo, tendencia). Es el argumento del reto: la tripulación decide
-  sin esperar a la Tierra (hasta 20 min de retraso).
-- Capa LLM OPCIONAL: si hay ANTHROPIC_API_KEY + internet, Claude redacta la misma
-  respuesta de forma más natural, ANCLADA a los hechos de la KB y al contexto. Si
-  falla por cualquier razón, se cae a la respuesta por reglas. Nunca se rompe.
+HYBRID design:
+- OFFLINE rule-based core: always answers, no internet or API key, using the
+  knowledge base in this file + the astronaut's real context (latest record,
+  traffic light, trend). This is the challenge's argument: the crew decides
+  without waiting for Earth (up to ~20 min one-way delay to Mars).
+- OPTIONAL LLM layer: if ANTHROPIC_API_KEY + internet are available, Claude
+  rephrases the same answer, GROUNDED in the KB facts and the context. On any
+  failure it falls back to the rule-based answer. It never breaks.
 
-Honestidad (obligatoria, ver CLAUDE.md):
-- Datos de demo sintéticos; no es un modelo fisiológico validado ni consejo médico.
-- Los rangos son referencias clínicas terrestres, no criterios de alarma de NASA.
-- No se usa branding de NASA. El uso de IA se declara en la UI (regla de SI del reto).
+The assistant speaks ENGLISH (submission pages must be in English).
+
+Honesty (mandatory, see CLAUDE.md and the behavioral research ficha):
+- Demo data is synthetic; this is not a validated physiological model nor medical advice.
+- Thresholds are general clinical/lab references (mostly non-astronaut populations),
+  not NASA alarm criteria. No NASA branding. The use of AI is disclosed in the UI.
+
+Behavioral knowledge (sleep / mood / team) is sourced from the team research ficha:
+AASM/SRS 2015, Jones 2022, Flynn-Evans 2016, Akerstedt 2014 (KSS), Topp 2015 (WHO-5),
+Kroenke 2003 (PHQ-2), Kanas (Shuttle/Mir), NASA BHP (Passmore 2026).
 """
 from __future__ import annotations
 
@@ -26,7 +32,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from models import HealthRecord, get_session, utcnow
-from thresholds import THRESHOLDS, Status, evaluate, get_recommendation
+from thresholds import THRESHOLDS, Status, evaluate
 
 router = APIRouter(prefix="/chat", tags=["chatbot"])
 
@@ -35,138 +41,248 @@ router = APIRouter(prefix="/chat", tags=["chatbot"])
 LLM_MODEL = os.getenv("CHATBOT_MODEL", "claude-opus-5")
 
 DISCLAIMER = (
-    "No soy consejo médico y los datos de la demo son sintéticos. Los rangos son "
-    "referencias clínicas generales (de la Tierra), no criterios de alarma de NASA."
+    "I'm not medical advice and the demo data is synthetic. Thresholds are general "
+    "clinical references (mostly from Earth populations), not NASA alarm criteria."
 )
 
 # --------------------------------------------------------------------------- #
-# Base de conocimiento (fuente única de los textos del asistente)
+# Knowledge base (single source for the assistant's text)
 # --------------------------------------------------------------------------- #
 
-# Etiquetas legibles (el backend/thresholds.py no las trae; se replican de
-# frontend/src/data/thresholds.ts). Mantener sincronizado.
+# Etiquetas legibles (el backend/thresholds.py no las trae). Mantener sincronizado
+# con frontend/src/data/thresholds.ts (labels en español en la app; el bot va en inglés).
 LABELS = {
-    "heart_rate": "Frecuencia cardíaca",
-    "systolic_bp": "Presión sistólica",
-    "spo2": "SpO2 (oxigenación)",
-    "body_temp": "Temperatura corporal",
-    "glucose": "Glucosa",
-    "sleep_hours": "Horas de sueño",
-    "mood": "Estado de ánimo",
+    "heart_rate": "Heart rate",
+    "systolic_bp": "Systolic blood pressure",
+    "spo2": "SpO2 (oxygen saturation)",
+    "body_temp": "Body temperature",
+    "glucose": "Glucose",
+    "sleep_hours": "Sleep hours",
+    "mood": "Mood",
 }
 
-# Por indicador: qué es, por qué importa en el espacio (peligro HRP asociado),
-# cómo medirlo y qué hacer según el estado del semáforo.
+# Per tracked indicator: what it is, why it matters in space (HRP hazard), how to
+# measure it, and extra sourced facts the assistant can teach.
 INDICATORS = {
     "heart_rate": {
-        "que_es": "El número de latidos del corazón por minuto en reposo.",
+        "que_es": "The number of heartbeats per minute at rest.",
         "espacio": (
-            "En microgravedad el sistema cardiovascular se readapta (los líquidos "
-            "se desplazan hacia el torso y la cabeza), así que tu FC en reposo puede "
-            "cambiar respecto a la Tierra. Peligro HRP: gravedad alterada."
+            "In microgravity the cardiovascular system readapts (fluids shift toward "
+            "the chest and head), so your resting HR can differ from Earth. "
+            "HRP hazard: altered gravity."
         ),
-        "como_medir": "En reposo, sentado y tranquilo 5 min. El sensor de muñeca/dedo la toma; también puedes contar el pulso 30 s y multiplicar por 2.",
+        "como_medir": "At rest, seated and calm for 5 min. The wrist/finger sensor reads it; you can also count your pulse for 30 s and multiply by 2.",
+        "facts": None,
     },
     "systolic_bp": {
-        "que_es": "La presión máxima en las arterias cuando el corazón late (el número de arriba).",
+        "que_es": "The peak pressure in your arteries when the heart beats (the top number).",
         "espacio": (
-            "En vuelo la presión tiende a bajar un poco respecto a la Tierra por la "
-            "readaptación cardiovascular; por eso un umbral fijo terrestre puede dar "
-            "falsas alarmas. Peligro HRP: gravedad alterada."
+            "In flight blood pressure tends to drop a bit versus Earth due to "
+            "cardiovascular readaptation, so a fixed Earth threshold can cause false "
+            "alarms. HRP hazard: altered gravity."
         ),
-        "como_medir": "Con el brazalete a la altura del corazón, en reposo y sin hablar. Evita medir justo después de ejercicio o café.",
+        "como_medir": "With the cuff at heart level, at rest and without talking. Avoid measuring right after exercise or coffee.",
+        "facts": None,
     },
     "spo2": {
-        "que_es": "El porcentaje de oxígeno que llevan tus glóbulos rojos (saturación).",
+        "que_es": "The percentage of oxygen carried by your red blood cells (saturation).",
         "espacio": (
-            "Vigila la oxigenación y, de forma indirecta, la calidad del aire de la "
-            "cabina (un ambiente cerrado hostil controla O2, CO2 y presión). "
-            "Peligros HRP: ambiente cerrado hostil."
+            "Tracks oxygenation and, indirectly, cabin air quality (a hostile closed "
+            "environment controls O2, CO2 and pressure). HRP hazard: hostile closed environment."
         ),
-        "como_medir": "Con el oxímetro en el dedo, quieto unos segundos hasta que la lectura se estabilice. Manos tibias dan mejor señal.",
+        "como_medir": "With the pulse oximeter on your finger, still for a few seconds until the reading stabilizes. Warm hands give a better signal.",
+        "facts": None,
     },
     "body_temp": {
-        "que_es": "La temperatura de tu cuerpo.",
+        "que_es": "Your body temperature.",
         "espacio": (
-            "Sirve como señal temprana de infección o de respuesta inmune, que el "
-            "espacio puede alterar. Ojo: el límite depende de dónde mida el sensor "
-            "(central ≈ oral + 0,47 °C). Peligro HRP: ambiente cerrado hostil."
+            "An early signal of infection or immune response, which spaceflight can "
+            "alter. Note: the limit depends on where the sensor measures (core temp "
+            "~= oral + 0.47 C). HRP hazard: hostile closed environment."
         ),
-        "como_medir": "Con el termómetro en el sitio habitual (oral/axilar/frente). Usa siempre el mismo sitio para poder comparar.",
+        "como_medir": "With the thermometer at the usual site (oral/armpit/forehead). Always use the same site so readings are comparable.",
+        "facts": None,
     },
     "glucose": {
-        "que_es": "El nivel de azúcar en la sangre.",
+        "que_es": "Your blood sugar level.",
         "espacio": (
-            "Refleja tu nutrición y metabolismo, que importan en misiones largas con "
-            "dieta y actividad controladas. Peligro HRP: ambiente cerrado / nutrición."
+            "Reflects your nutrition and metabolism, which matter on long missions "
+            "with controlled diet and activity. HRP hazard: hostile closed environment / nutrition."
         ),
-        "como_medir": "Con el glucómetro, idealmente en ayunas o a la misma hora respecto a las comidas para comparar.",
+        "como_medir": "With the glucometer, ideally fasting or at the same time relative to meals so readings are comparable.",
+        "facts": None,
     },
     "sleep_hours": {
-        "que_es": "Las horas que dormiste.",
+        "que_es": "How many hours you slept.",
         "espacio": (
-            "El confinamiento y los horarios irregulares afectan el sueño, y dormir "
-            "poco deteriora el ánimo y la cognición. Peligros HRP: aislamiento y "
-            "confinamiento."
+            "Confinement and irregular schedules hurt sleep, and short sleep degrades "
+            "mood and cognition. HRP hazards: isolation and confinement (sleep loss)."
         ),
-        "como_medir": "Registra las horas reales de sueño de la última noche (el sensor o tu propia estimación).",
+        "como_medir": "Log the real hours of sleep from last night (the sensor's estimate or your own).",
+        "facts": (
+            "On the ISS 8.5 h are scheduled, but astronauts sleep about 6.5 +/- 1.4 h "
+            "(Jones 2022); the scheduled 8.5 h happened only ~5.9% of nights. Seven "
+            "nights of 6 h is roughly like 24-36 h awake. Healthy reference: >= 7 h "
+            "(AASM/SRS 2015). A sleep alert should follow a pattern, not one reading: "
+            "<= 6 h for three nights in a row, or a single night under 5 h."
+        ),
     },
     "mood": {
-        "que_es": "Cómo te sientes anímicamente, en una escala de 1 (muy mal) a 5 (muy bien).",
+        "que_es": "How you feel emotionally, on a 1 (very bad) to 5 (very good) scale.",
         "espacio": (
-            "El aislamiento prolongado puede traer cambios de comportamiento; "
-            "registrarlo ayuda a detectarlos a tiempo. Peligro HRP: aislamiento y "
-            "confinamiento."
+            "Prolonged isolation can bring behavioral changes; logging it helps catch "
+            "them early. HRP hazard: isolation and confinement (behavioral health)."
         ),
-        "como_medir": "Autoevalúate del 1 al 5 pensando en tu ánimo general de hoy. Sé honesto: es para ti.",
+        "como_medir": "Rate yourself 1-5 for your overall mood today. Be honest: it's for you.",
+        "facts": (
+            "The daily 1-5 emoji is a quick check. Well-being is screened with the WHO-5 "
+            "every 14 days (0-100: <= 50 = low well-being, <= 28 = possible depression; "
+            "Topp 2015). Ask me about the WHO-5 if you want details."
+        ),
     },
 }
 
-# Los 5 peligros del Human Research Program de NASA.
+# Behavioral indicators the assistant can EXPLAIN and guide on, but that the app
+# does not track in the database yet (team decision; see docs/decision_integracion_semaforo.md,
+# open point 7.3). Sourced from the research ficha.
+BEHAVIORAL = {
+    "kss": (
+        "**Karolinska Sleepiness Scale (KSS)** — a 1-9 self-rating of how sleepy you "
+        "feel right now (Akerstedt 2014). Rough reading: green 1-5, yellow 6-7, red 8-9. "
+        "If it's >= 7 before a critical task, consider a vigilance check (PVT-B) or a short rest."
+    ),
+    "who5": (
+        "**WHO-5 Well-Being Index** — 5 questions about the last 2 weeks, scored 0-100 "
+        "(Topp 2015). Guide: > 50 fine, 29-50 low well-being (worth watching), <= 28 "
+        "possible depression (escalate). A 10-point drop from your own baseline is "
+        "meaningful. Taken every 14 days, matching NASA's private psychological "
+        "conferences (PPC). It's a screen, not a diagnosis."
+    ),
+    "team": (
+        "**Team climate** — a quick daily read of the mood with the crew and with ground "
+        "control. It matters because on long missions tension can shift toward mission "
+        "control (Kanas); a relationship with ground that turns negative is itself a "
+        "warning sign. (The exact threshold here is a design choice, not a sourced cutoff.)"
+    ),
+}
+
+# The 5 hazards of spaceflight (NASA's Human Research Program; NASA summarizes them
+# with the RIDGE acronym).
 HAZARDS = {
-    "radiacion": (
-        "Radiación espacial: uno de los riesgos más serios; puede dañar células y "
-        "ADN. No se mide con un indicador simple en cabina, así que en esta app es "
-        "una limitación reconocida (haría falta un dosímetro)."
+    "radiation": (
+        "Space radiation: one of the most serious risks; it can damage cells and DNA. "
+        "It isn't captured by a simple cabin indicator, so in this app it's an "
+        "acknowledged limitation (it would need a dosimeter)."
     ),
-    "aislamiento": (
-        "Aislamiento y confinamiento: grupos pequeños en espacio reducido por meses "
-        "pueden tener cambios de ánimo y sueño. Lo reflejamos con ánimo y horas de sueño."
+    "isolation": (
+        "Isolation and confinement: small groups in tight quarters for months can show "
+        "mood and sleep changes. We reflect it with mood and sleep hours."
     ),
-    "distancia": (
-        "Distancia de la Tierra: la ayuda médica puede tardar hasta ~20 min en "
-        "responder, así que debes poder autoevaluarte y actuar sin esperar a tierra. "
-        "Por eso esta app funciona sin conexión."
+    "distance": (
+        "Distance from Earth: medical help can take up to ~20 min one-way, so you must "
+        "be able to self-assess and act without waiting for the ground. That's why this "
+        "app works offline."
     ),
-    "gravedad": (
-        "Gravedad alterada: el cuerpo se readapta (corazón, músculos, huesos, oído "
-        "interno). Lo reflejamos con frecuencia cardíaca y presión."
+    "gravity": (
+        "Altered gravity: the body readapts (heart, muscles, bones, inner ear). We "
+        "reflect it with heart rate and blood pressure."
     ),
-    "ambiente": (
-        "Ambiente cerrado hostil: la nave controla aire, presión, temperatura y "
-        "microbios. Lo reflejamos con SpO2 y temperatura corporal."
+    "environment": (
+        "Hostile closed environment: the vehicle controls air, pressure, temperature "
+        "and microbes. We reflect it with SpO2 and body temperature."
     ),
 }
 
-STATUS_ES = {
-    Status.NORMAL: "verde (normal)",
-    Status.ATTENTION: "amarillo (atención)",
-    Status.CRITICAL: "rojo (crítico)",
+STATUS_EN = {
+    Status.NORMAL: "green (normal)",
+    Status.ATTENTION: "yellow (attention)",
+    Status.CRITICAL: "red (critical)",
 }
 
-# Preguntas rápidas que el widget ofrece como chips.
+# English recommendations for the bot (thresholds.py keeps the Spanish ones the
+# Spanish app shows; we don't touch those). Sleep/mood improved per the research ficha.
+RECOMMENDATIONS_EN = {
+    "heart_rate": {
+        Status.ATTENTION: "Rest and measure again in 30 min. Avoid intense exercise.",
+        Status.CRITICAL: "Report to the flight surgeon. Stay at rest and watch your symptoms.",
+    },
+    "systolic_bp": {
+        Status.ATTENTION: "Hydrate and avoid sudden posture changes.",
+        Status.CRITICAL: "Report to the flight surgeon right away.",
+    },
+    "spo2": {
+        Status.ATTENTION: "Check the cabin air quality. Repeat the measurement.",
+        Status.CRITICAL: "Immediate alert — possible oxygenation or environment problem.",
+    },
+    "body_temp": {
+        Status.ATTENTION: "Monitor every few hours. Hydrate.",
+        Status.CRITICAL: "Possible infection or immune response — contact the flight surgeon.",
+    },
+    "glucose": {
+        Status.ATTENTION: "Adjust your next meal/snack. Measure again in 1-2 h.",
+        Status.CRITICAL: "Address it now per your personal medical protocol.",
+    },
+    "sleep_hours": {
+        Status.ATTENTION: "Prioritize sleep hygiene tonight: earlier bedtime, dim light, less caffeine.",
+        Status.CRITICAL: "Short sleep risks cognition/mood. If it's <5 h or 3 nights in a row, flag it; avoid critical tasks or EVA if you can.",
+    },
+    "mood": {
+        Status.ATTENTION: "Use behavioral support: exercise, family contact, downtime. Worth a note for the next PPC.",
+        Status.CRITICAL: "Reach out to mission behavioral health (BHP). If you have any thought of self-harm, escalate immediately.",
+    },
+}
+
+
+def _recommendation(field: str, status: Status) -> Optional[str]:
+    if status == Status.NORMAL:
+        return None
+    return RECOMMENDATIONS_EN.get(field, {}).get(status)
+
+# Escalation guidance (research ficha, section 6). Non-diagnostic.
+ESCALATION = (
+    "**What you can handle yourself:** sleep hygiene, earlier bedtime, light exposure, "
+    "exercise, family contact, short naps.\n"
+    "**Note for the next PPC (persistent yellow):** any indicator yellow 3+ days; WHO-5 "
+    "between 29 and 50 or a >= 10-point drop; conflict high for 3+ days.\n"
+    "**Tell the flight surgeon / BHP now (red):** WHO-5 <= 28; sleep <= 6 h for 3 nights "
+    "or under 5 h before an EVA or critical task; KSS 8-9 before a critical task.\n"
+    "**Any thought of self-harm: escalate immediately.**"
+)
+
+# Gamification (research ficha, section E). Core principle first.
+GAMIFICATION = (
+    "The golden rule: points are earned for **logging consistently and honestly, never "
+    "for \"good\" values** (rewarding good numbers pushes people to fake answers or "
+    "under-report). Mechanics that fit:\n"
+    "- **Logbook streak** that *pauses* (doesn't reset) when you miss a day.\n"
+    "- **\"Honest Report\" badge**: earned when you log a yellow/red and complete the "
+    "suggested action.\n"
+    "- **Cooperative crew challenge**: the crew logs and adds exercise minutes together, "
+    "no individual rankings.\n"
+    "- **\"Circadian window\"**: go to bed within +/- 30 min of your target time."
+)
+
+# Honesty note for the pitch (research ficha corrections).
+HONESTY_NOTE = (
+    "A couple of honesty notes for the pitch: \"CONNECT\" is a popular acronym, not an "
+    "official HRP strategy (the real countermeasures are NASA's Behavioral Health & "
+    "Performance ones). And the numeric cutoffs come from general or lab populations, "
+    "not from astronauts, so they're approximations, not validated space criteria."
+)
+
+# Quick questions the widget offers as chips (English).
 QUICK_QUESTIONS = [
-    "¿Cómo estoy?",
-    "¿Qué hago si algo está en rojo?",
-    "¿Qué es la SpO2?",
-    "¿Cómo mido la presión?",
-    "¿Cuáles son los 5 peligros?",
-    "¿Cómo registro una medición?",
+    "How am I doing?",
+    "What should I do if something is red?",
+    "What is SpO2?",
+    "How do I measure blood pressure?",
+    "What are the 5 hazards?",
+    "How do I log a measurement?",
 ]
 
 
 # --------------------------------------------------------------------------- #
-# Utilidades de texto e intención (núcleo offline)
+# Text + intent utilities (offline core)
 # --------------------------------------------------------------------------- #
 
 def _norm(text: str) -> str:
@@ -176,23 +292,29 @@ def _norm(text: str) -> str:
     return "".join(c for c in text if unicodedata.category(c) != "Mn")
 
 
-# Sinónimos por indicador para detectar de cuál habla el usuario.
+# Synonyms per indicator (English + Spanish, so it matches either language).
 INDICATOR_SYNONYMS = {
-    "heart_rate": ["frecuencia cardiaca", "ritmo cardiaco", "pulso", "latidos", "corazon", "fc", "bpm"],
-    "systolic_bp": ["presion", "sistolica", "tension", "mmhg", "blood pressure"],
-    "spo2": ["spo2", "oxigeno", "oxigenacion", "saturacion", "o2"],
-    "body_temp": ["temperatura", "fiebre", "termometro", "temp"],
-    "glucose": ["glucosa", "azucar", "glucemia", "mg/dl"],
-    "sleep_hours": ["sueno", "dormir", "dormi", "horas de sueno", "descanso"],
-    "mood": ["animo", "estado de animo", "humor", "mood", "me siento"],
+    "heart_rate": ["heart rate", "heart", "pulse", "bpm", "frecuencia cardiaca", "ritmo cardiaco", "pulso", "latidos", "corazon", "fc"],
+    "systolic_bp": ["blood pressure", "systolic", "pressure", "mmhg", "presion", "sistolica", "tension"],
+    "spo2": ["spo2", "oxygen", "oxygenation", "saturation", "o2", "oxigeno", "oxigenacion", "saturacion"],
+    "body_temp": ["temperature", "fever", "thermometer", "temp", "temperatura", "fiebre", "termometro"],
+    "glucose": ["glucose", "sugar", "blood sugar", "glucosa", "azucar", "glucemia", "mg/dl"],
+    "sleep_hours": ["sleep", "sleeping", "slept", "rest", "sueno", "dormir", "dormi", "descanso"],
+    "mood": ["mood", "feeling", "emotional", "animo", "estado de animo", "humor", "me siento"],
 }
 
 HAZARD_SYNONYMS = {
-    "radiacion": ["radiacion", "radiation"],
-    "aislamiento": ["aislamiento", "confinamiento", "soledad"],
-    "distancia": ["distancia", "retraso", "tierra", "20 min"],
-    "gravedad": ["gravedad", "microgravedad", "ingravidez"],
-    "ambiente": ["ambiente", "cabina", "aire", "cerrado"],
+    "radiation": ["radiation", "radiacion"],
+    "isolation": ["isolation", "confinement", "loneliness", "aislamiento", "confinamiento", "soledad"],
+    "distance": ["distance", "delay", "earth", "20 min", "distancia", "retraso", "tierra"],
+    "gravity": ["gravity", "microgravity", "weightless", "gravedad", "microgravedad", "ingravidez"],
+    "environment": ["environment", "cabin", "air", "closed", "ambiente", "cabina", "aire", "cerrado"],
+}
+
+BEHAVIORAL_SYNONYMS = {
+    "kss": ["kss", "karolinska", "sleepiness", "somnolencia", "drowsy"],
+    "who5": ["who-5", "who5", "well-being", "wellbeing", "bienestar", "depression", "depresion"],
+    "team": ["team", "crew", "conflict", "ground control", "mission control", "equipo", "tripulacion", "conflicto"],
 }
 
 
@@ -203,12 +325,19 @@ def _detect_indicator(text: str) -> Optional[str]:
     return None
 
 
+def _detect_behavioral(text: str) -> Optional[str]:
+    for key, syns in BEHAVIORAL_SYNONYMS.items():
+        if any(s in text for s in syns):
+            return key
+    return None
+
+
 def _has(text: str, *words: str) -> bool:
     return any(w in text for w in words)
 
 
 # --------------------------------------------------------------------------- #
-# Contexto real del astronauta (desde la base de datos)
+# Astronaut's real context (from the database)
 # --------------------------------------------------------------------------- #
 
 def _recent_records(session: Session, astronaut_id: str, limit: int = 8):
@@ -222,7 +351,7 @@ def _recent_records(session: Session, astronaut_id: str, limit: int = 8):
 
 
 def _assess(record: HealthRecord) -> dict:
-    """Estado + recomendación por cada indicador presente en el registro."""
+    """Status + recommendation for each indicator present in the record."""
     out = {}
     for field in THRESHOLDS:
         value = getattr(record, field, None)
@@ -232,21 +361,21 @@ def _assess(record: HealthRecord) -> dict:
         out[field] = {
             "value": value,
             "status": status,
-            "recommendation": get_recommendation(field, status),
+            "recommendation": _recommendation(field, status),
         }
     return out
 
 
 def _trend(records, field: str) -> Optional[str]:
-    """Dirección simple del indicador en las últimas lecturas (sube/baja/estable)."""
+    """Simple direction of the indicator over recent readings (up/down/stable)."""
     values = [getattr(r, field) for r in reversed(records) if getattr(r, field) is not None]
     if len(values) < 2:
         return None
     delta = values[-1] - values[0]
     span = max(abs(v) for v in values) or 1
     if abs(delta) < 0.03 * span:
-        return "estable"
-    return "subiendo" if delta > 0 else "bajando"
+        return "stable"
+    return "rising" if delta > 0 else "falling"
 
 
 def _age_text(record: Optional[HealthRecord]) -> Optional[str]:
@@ -258,17 +387,21 @@ def _age_text(record: Optional[HealthRecord]) -> Optional[str]:
         ts = ts.replace(tzinfo=_tz.utc)
     minutes = (utcnow() - ts).total_seconds() / 60
     if minutes < 1:
-        return "hace un momento"
+        return "just now"
     if minutes < 60:
-        return f"hace {int(minutes)} min"
+        return f"{int(minutes)} min ago"
     hours = minutes / 60
     if hours < 24:
-        return f"hace {int(hours)} h"
-    return f"hace {int(hours / 24)} día(s)"
+        return f"{int(hours)} h ago"
+    return f"{int(hours / 24)} day(s) ago"
 
 
 def build_context(session: Session, astronaut_id: str) -> dict:
-    """Arma el estado actual: último registro, semáforo, tendencias y alertas."""
+    """Build the current state: latest record, traffic light, trends and alerts.
+
+    NOTE: this is the single place that computes status. When the baseline traffic
+    light (semaforo_bridge.compute_status) is implemented, switch _assess here.
+    """
     records = _recent_records(session, astronaut_id)
     if not records:
         return {"has_data": False, "alerts": [], "records": []}
@@ -284,10 +417,10 @@ def build_context(session: Session, astronaut_id: str) -> dict:
                 "value": a["value"],
                 "unit": THRESHOLDS[field]["unit"],
                 "status": a["status"].value,
-                "status_es": STATUS_ES[a["status"]],
+                "status_en": STATUS_EN[a["status"]],
                 "recommendation": a["recommendation"],
             })
-    # rojo primero, luego amarillo
+    # red first, then yellow
     alerts.sort(key=lambda x: 0 if x["status"] == "critical" else 1)
 
     trends = {f: _trend(records, f) for f in THRESHOLDS}
@@ -302,21 +435,21 @@ def build_context(session: Session, astronaut_id: str) -> dict:
 
 
 def _context_summary_text(ctx: dict) -> str:
-    """Resumen legible del estado, usado en respuestas por reglas y como insumo del LLM."""
+    """Readable summary of the state, used in rule answers and as LLM input."""
     if not ctx["has_data"]:
-        return "Aún no hay registros de salud para este astronauta."
-    lines = [f"Última medición: {ctx['age_text']}."]
+        return "No health records yet for this astronaut."
+    lines = [f"Last measurement: {ctx['age_text']}."]
     for field, a in ctx["assessment"].items():
         label = LABELS.get(field, field)
         unit = THRESHOLDS[field]["unit"]
         trend = ctx["trends"].get(field)
-        trend_txt = f", tendencia {trend}" if trend and trend != "estable" else ""
-        lines.append(f"- {label}: {a['value']} {unit} → {STATUS_ES[a['status']]}{trend_txt}")
+        trend_txt = f", trend {trend}" if trend and trend != "stable" else ""
+        lines.append(f"- {label}: {a['value']} {unit} -> {STATUS_EN[a['status']]}{trend_txt}")
     return "\n".join(lines)
 
 
 # --------------------------------------------------------------------------- #
-# Motor por reglas (respuesta offline garantizada)
+# Rule engine (guaranteed offline answer)
 # --------------------------------------------------------------------------- #
 
 def _indicator_answer(field: str, ctx: dict) -> str:
@@ -327,29 +460,32 @@ def _indicator_answer(field: str, ctx: dict) -> str:
     n_lo, n_hi = rule["normal"]
     parts = [
         f"**{label}** — {info['que_es']}",
-        f"Por qué importa en el espacio: {info['espacio']}",
-        f"Cómo medirlo: {info['como_medir']}",
-        f"Rango normal de referencia: {n_lo}–{n_hi} {unit}.",
+        f"Why it matters in space: {info['espacio']}",
+        f"How to measure it: {info['como_medir']}",
+        f"Reference normal range: {n_lo}-{n_hi} {unit}.",
     ]
-    # Si hay dato reciente, lo incluimos.
+    if info.get("facts"):
+        parts.append(info["facts"])
+    # Include the latest reading if available.
     if ctx["has_data"] and field in ctx["assessment"]:
         a = ctx["assessment"][field]
-        parts.append(f"Tu última lectura: {a['value']} {unit} → {STATUS_ES[a['status']]}.")
+        parts.append(f"Your latest reading: {a['value']} {unit} -> {STATUS_EN[a['status']]}.")
         if a["recommendation"]:
-            parts.append(f"Sugerencia: {a['recommendation']}")
+            parts.append(f"Suggestion: {a['recommendation']}")
     return "\n".join(parts)
 
 
 def _action_answer(ctx: dict, field: Optional[str]) -> str:
     if not ctx["has_data"]:
         return (
-            "Primero registra una medición y te diré qué hacer según tu semáforo.\n"
-            "En general: si algo sale en amarillo, repite la medición y vigila; si "
-            "sale en rojo o persiste, repórtalo al oficial médico de la misión."
+            "Log a measurement first and I'll tell you what to do based on your traffic "
+            "light.\nIn general: if something is yellow, repeat the measurement and keep "
+            "watching; if it's red or it persists, report it to the mission's medical "
+            "officer.\n\n" + ESCALATION
         )
     targets = [field] if field else [a["indicator"] for a in ctx["alerts"]]
     if not targets:
-        return "Ahora mismo todos tus indicadores con dato están en verde. Mantén tu rutina 👍"
+        return "Right now every indicator with data is green. Keep up your routine 👍"
     lines = []
     for f in targets:
         a = ctx["assessment"].get(f)
@@ -357,26 +493,24 @@ def _action_answer(ctx: dict, field: Optional[str]) -> str:
             continue
         label = LABELS.get(f, f)
         if a["status"] == Status.NORMAL:
-            lines.append(f"**{label}** está en verde, sin acción necesaria.")
+            lines.append(f"**{label}** is green, no action needed.")
         else:
-            rec = a["recommendation"] or "Repite la medición y vigila la evolución."
-            lines.append(f"**{label}** en {STATUS_ES[a['status']]}: {rec}")
-    lines.append(
-        "Si un indicador queda en rojo, no mejora al repetir, o aparecen síntomas, "
-        "repórtalo al oficial médico (flight surgeon)."
-    )
+            rec = a["recommendation"] or "Repeat the measurement and watch how it evolves."
+            lines.append(f"**{label}** is {STATUS_EN[a['status']]}: {rec}")
+    lines.append("")
+    lines.append(ESCALATION)
     return "\n".join(lines)
 
 
 def _status_answer(ctx: dict) -> str:
     if not ctx["has_data"]:
-        return "Aún no tienes registros. Ingresa al menos un indicador y evalúo tu estado."
+        return "You have no records yet. Enter at least one indicator and I'll assess your state."
     summary = _context_summary_text(ctx)
     if ctx["alerts"]:
         n = len(ctx["alerts"])
-        head = f"Tienes {n} indicador(es) fuera de verde. Revisa:"
+        head = f"You have {n} indicator(s) outside green. Check:"
     else:
-        head = "Todo lo que registraste está en verde ✅. Buen trabajo."
+        head = "Everything you logged is green ✅. Nice work."
     return f"{head}\n{summary}"
 
 
@@ -384,23 +518,23 @@ def _hazards_answer(text: str) -> str:
     for key, syns in HAZARD_SYNONYMS.items():
         if any(s in text for s in syns):
             return HAZARDS[key]
-    intro = "Los 5 peligros del vuelo espacial según el Human Research Program de NASA:"
-    bullets = "\n".join(f"• {HAZARDS[k]}" for k in ["radiacion", "aislamiento", "distancia", "gravedad", "ambiente"])
+    intro = "The 5 hazards of spaceflight per NASA's Human Research Program (NASA calls them RIDGE):"
+    bullets = "\n".join(f"• {HAZARDS[k]}" for k in ["radiation", "isolation", "distance", "gravity", "environment"])
     return f"{intro}\n{bullets}"
 
 
 def _app_help_answer(text: str) -> str:
-    if _has(text, "semaforo", "color", "verde", "amarillo", "rojo"):
+    if _has(text, "traffic light", "color", "green", "yellow", "red", "semaforo", "verde", "amarillo", "rojo"):
         return (
-            "El semáforo resume tu estado de un vistazo: **verde** = normal, "
-            "**amarillo** = atención (repite y vigila), **rojo** = crítico (actúa y "
-            "reporta). Cada parte del cuerpo se pinta con el color de sus indicadores."
+            "The traffic light sums up your state at a glance: **green** = normal, "
+            "**yellow** = attention (repeat and watch), **red** = critical (act and "
+            "report). Each body part is colored by its indicators."
         )
     return (
-        "Para registrar: escribe tus valores en las tarjetas de cada indicador y pulsa "
-        "**Registrar medición**. No hace falta llenar todos; con uno basta. Luego verás "
-        "el color en la figura, las recomendaciones y las gráficas de tendencia. "
-        "Puedes dejar vacío lo que no mediste."
+        "To log: type your values into each indicator card and press **Register "
+        "measurement**. You don't need to fill them all; one is enough. Then you'll see "
+        "the color on the figure, the recommendations and the trend charts. Leave blank "
+        "anything you didn't measure."
     )
 
 
@@ -409,99 +543,123 @@ def _gamification_answer(session: Session, astronaut_id: str, ctx: dict) -> str:
     total = len(records)
     if not ctx["has_data"]:
         return (
-            "¡Empieza tu racha! Registrar tus indicadores cada día es la mejor rutina "
-            "de salud en una misión. Haz tu primera medición y te felicito 🚀"
+            "Start your streak! Logging your indicators every day is the best health "
+            "routine on a mission. Make your first measurement 🚀\n\n" + GAMIFICATION
         )
     if ctx["alerts"]:
         return (
-            "Hoy toca cuidarte: tienes indicadores fuera de verde. Atiende la "
-            "recomendación y vuelve a medir — recuperar el verde cuenta como logro 💪"
+            "Today is a self-care day: you have indicators outside green. Follow the "
+            "suggestion and measure again — getting back to green counts as a win 💪 "
+            "(that's exactly the \"Honest Report\" idea).\n\n" + GAMIFICATION
         )
     return (
-        f"¡Vas bien! Llevas {total} medición(es) recientes y hoy todo está en verde ✅. "
-        "Mantén la rutina: medir a la misma hora cada día hace tus tendencias más útiles."
+        f"Going well! You've logged {total} recent measurement(s) and today everything "
+        f"is green ✅. Keep the routine: measuring at the same time each day makes your "
+        f"trends more useful.\n\n" + GAMIFICATION
     )
 
 
 def rule_based_reply(message: str, session: Session, astronaut_id: str, ctx: dict) -> str:
-    """Decide la intención y responde solo con la base de conocimiento + contexto."""
+    """Decide the intent and answer using only the knowledge base + context."""
     text = _norm(message)
 
-    # Saludo puro
-    if _has(text, "hola", "buenas", "hey", "saludos") and len(text) <= 15:
-        head = "¡Hola! Soy tu asistente de salud a bordo."
-        if ctx["has_data"] and ctx["alerts"]:
-            head += f" Ojo: tienes {len(ctx['alerts'])} indicador(es) fuera de verde."
+    # Self-harm safety: always escalate, regardless of other intent.
+    if _has(text, "hurt myself", "kill myself", "self-harm", "self harm", "suicid", "end my life", "hacerme dano", "lastimarme", "quitarme la vida"):
         return (
-            f"{head} Puedo explicarte indicadores y riesgos, decirte cómo estás, "
-            "guiarte si algo sale de rango y ayudarte a usar la app. ¿Qué necesitas?"
+            "I'm really glad you told me. This is above what this app handles: please "
+            "contact the flight surgeon or Behavioral Health & Performance (BHP) right "
+            "now — any thought of self-harm is an immediate escalation. You don't have "
+            "to deal with this alone."
         )
 
-    # Peligros HRP
-    if _has(text, "peligro", "peligros", "riesgo", "hazard") or any(
+    # Pure greeting
+    if _has(text, "hello", "hi", "hey", "hola", "buenas") and len(text) <= 15:
+        head = "Hi! I'm your on-board health assistant."
+        if ctx["has_data"] and ctx["alerts"]:
+            head += f" Heads up: you have {len(ctx['alerts'])} indicator(s) outside green."
+        return (
+            f"{head} I can explain indicators and risks, tell you how you're doing, "
+            "guide you if something is out of range, and help you use the app. What do you need?"
+        )
+
+    # Honesty note for the pitch
+    if _has(text, "connect", "honest", "pitch", "validated", "source", "fuente", "validado"):
+        return HONESTY_NOTE
+
+    # Behavioral extras (KSS / WHO-5 / team climate)
+    behavioral = _detect_behavioral(text)
+    if behavioral and _detect_indicator(text) is None:
+        return BEHAVIORAL[behavioral]
+
+    # Hazards
+    if _has(text, "hazard", "hazards", "risk", "peligro", "peligros", "riesgo") or any(
         s in text for syns in HAZARD_SYNONYMS.values() for s in syns
     ):
-        # Si además pregunta por un indicador, prioriza el indicador abajo.
         if _detect_indicator(text) is None:
-            return f"{_hazards_answer(text)}"
+            return _hazards_answer(text)
 
     indicator = _detect_indicator(text)
 
-    # ¿Qué hago / guía de acción?
-    if _has(text, "que hago", "que debo", "accion", "recomendacion", "deberia", "fuera de rango", "en rojo", "en amarillo", "mal"):
+    # What should I do / action guidance
+    if _has(text, "what should i do", "what do i do", "action", "recommend", "out of range", "is red", "is yellow", "feel bad", "que hago", "que debo", "accion", "recomendacion"):
         return _action_answer(ctx, indicator)
 
-    # ¿Cómo estoy / resumen?
-    if _has(text, "como estoy", "mi estado", "resumen", "como voy", "estoy bien"):
+    # Escalation specifically
+    if _has(text, "escalate", "report", "flight surgeon", "when do i", "escalar", "reportar"):
+        return ESCALATION
+
+    # How am I / summary
+    if _has(text, "how am i", "my state", "my status", "summary", "how am i doing", "como estoy", "mi estado", "resumen"):
         return _status_answer(ctx)
 
-    # Cómo medir
-    if indicator and _has(text, "como mido", "como medir", "medir", "medicion", "tomar"):
+    # How to measure
+    if indicator and _has(text, "how do i measure", "how to measure", "measure", "take a reading", "como mido", "como medir", "medir"):
         return INDICATORS[indicator]["como_medir"] + f"\n\n({DISCLAIMER})"
 
-    # Pregunta sobre un indicador concreto
+    # Question about a specific indicator
     if indicator:
         return _indicator_answer(indicator, ctx)
 
-    # Ayuda de la app
-    if _has(text, "registrar", "registro", "como uso", "como funciona", "semaforo", "grafica", "app", "ayuda"):
+    # App help
+    if _has(text, "register", "log", "how do i use", "how does it work", "traffic light", "chart", "app", "help", "registrar", "registro", "semaforo", "ayuda"):
         return _app_help_answer(text)
 
-    # Gamificación
-    if _has(text, "racha", "puntos", "logro", "reto", "recordatorio", "tarea", "motiva"):
+    # Gamification
+    if _has(text, "streak", "points", "badge", "challenge", "reminder", "motivate", "game", "racha", "puntos", "logro", "reto", "recordatorio"):
         return _gamification_answer(session, astronaut_id, ctx)
 
     # Fallback
     return (
-        "Puedo ayudarte con:\n"
-        "• Explicar un indicador (p. ej. «¿qué es la SpO2?») y cómo medirlo.\n"
-        "• Decirte cómo estás y qué hacer si algo sale de rango.\n"
-        "• Los 5 peligros del vuelo espacial.\n"
-        "• Cómo usar la app y leer el semáforo.\n"
-        "¿Sobre cuál quieres empezar?"
+        "I can help you with:\n"
+        "• Explaining an indicator (e.g. \"What is SpO2?\") and how to measure it.\n"
+        "• Telling you how you're doing and what to do if something is out of range.\n"
+        "• The 5 hazards of spaceflight, and behavioral checks (sleep, KSS, WHO-5, team).\n"
+        "• How to use the app and read the traffic light.\n"
+        "Which one would you like to start with?"
     )
 
 
 # --------------------------------------------------------------------------- #
-# Capa LLM opcional (redacta mejor, anclada a la KB y al contexto)
+# Optional LLM layer (rephrases, grounded in the KB + context)
 # --------------------------------------------------------------------------- #
 
 SYSTEM_PROMPT = (
-    "Eres el asistente de salud a bordo de una app que ayuda a astronautas en "
-    "misiones largas a AUTOEVALUARSE. Hablas español, en tono cercano, claro y breve "
-    "(2-5 frases). Reglas estrictas:\n"
-    "1) Usa SOLO los HECHOS y el CONTEXTO que te doy; no inventes cifras, rangos ni "
-    "diagnósticos. Si no está en los hechos, dilo y sugiere registrar datos.\n"
-    "2) No eres consejo médico y los datos son sintéticos: no diagnostiques. Para "
-    "estados en rojo o que persisten, recomienda reportar al oficial médico.\n"
-    "3) No menciones marcas, logos ni identificadores de NASA.\n"
-    "4) El objetivo es que el propio astronauta entienda y decida sus primeros pasos."
+    "You are the on-board health assistant of an app that helps astronauts on long "
+    "missions SELF-ASSESS. You speak English, in a warm, clear and brief tone (2-5 "
+    "sentences). Strict rules:\n"
+    "1) Use ONLY the FACTS and CONTEXT I give you; do not invent numbers, ranges or "
+    "diagnoses. If it's not in the facts, say so and suggest logging data.\n"
+    "2) You are not medical advice and the data is synthetic: do not diagnose. For red "
+    "states or anything that persists, recommend reporting to the flight surgeon / BHP. "
+    "Any mention of self-harm: escalate immediately.\n"
+    "3) Do not mention NASA brands, logos or identifiers.\n"
+    "4) The goal is for the astronaut to understand and decide their own first steps."
 )
 
 
 def llm_reply(message: str, facts: str, context_summary: str, history: Optional[list]) -> Optional[str]:
-    """Intenta redactar con Claude. Devuelve None ante cualquier fallo (sin API key,
-    sin internet, error de la API) para que el caller use la respuesta por reglas."""
+    """Try to rephrase with Claude. Returns None on any failure (no API key, no
+    internet, API error) so the caller uses the rule-based answer."""
     if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
         return None
     try:
@@ -510,10 +668,10 @@ def llm_reply(message: str, facts: str, context_summary: str, history: Optional[
         return None
 
     user_block = (
-        f"CONTEXTO DEL ASTRONAUTA (datos reales de la app):\n{context_summary}\n\n"
-        f"HECHOS QUE PUEDES USAR (de nuestra base de conocimiento):\n{facts}\n\n"
-        f"PREGUNTA DEL ASTRONAUTA:\n{message}\n\n"
-        "Responde en español, breve, usando solo esos hechos y contexto."
+        f"ASTRONAUT CONTEXT (real app data):\n{context_summary}\n\n"
+        f"FACTS YOU MAY USE (from our knowledge base):\n{facts}\n\n"
+        f"ASTRONAUT'S QUESTION:\n{message}\n\n"
+        "Answer in English, briefly, using only those facts and context."
     )
     messages = []
     for turn in (history or [])[-6:]:
@@ -537,31 +695,41 @@ def llm_reply(message: str, facts: str, context_summary: str, history: Optional[
         text = next((b.text for b in resp.content if b.type == "text"), "").strip()
         return text or None
     except Exception:
-        # Offline-first: cualquier error → se usa el núcleo por reglas.
+        # Offline-first: any error -> use the rule-based core.
         return None
 
 
 def _facts_for(message: str, ctx: dict) -> str:
-    """Selecciona los hechos de la KB relevantes para anclar al LLM."""
+    """Select the relevant KB facts to ground the LLM."""
     text = _norm(message)
     chunks = []
     indicator = _detect_indicator(text)
     if indicator:
         info = INDICATORS[indicator]
         rule = THRESHOLDS[indicator]
-        chunks.append(
+        chunk = (
             f"{LABELS[indicator]}: {info['que_es']} {info['espacio']} "
-            f"Cómo medir: {info['como_medir']} "
-            f"Rango normal: {rule['normal'][0]}-{rule['normal'][1]} {rule['unit']}."
+            f"How to measure: {info['como_medir']} "
+            f"Normal range: {rule['normal'][0]}-{rule['normal'][1]} {rule['unit']}."
         )
-    if any(s in text for syns in HAZARD_SYNONYMS.values() for s in syns) or _has(text, "peligro", "riesgo"):
-        chunks.append("Peligros HRP: " + " | ".join(HAZARDS.values()))
-    if _has(text, "semaforo", "registrar", "app", "grafica", "color"):
+        if info.get("facts"):
+            chunk += " " + info["facts"]
+        chunks.append(chunk)
+    behavioral = _detect_behavioral(text)
+    if behavioral:
+        chunks.append(BEHAVIORAL[behavioral])
+    if any(s in text for syns in HAZARD_SYNONYMS.values() for s in syns) or _has(text, "hazard", "risk", "peligro", "riesgo"):
+        chunks.append("Hazards (RIDGE): " + " | ".join(HAZARDS.values()))
+    if _has(text, "what should i do", "action", "escalate", "report", "que hago", "escalar"):
+        chunks.append(ESCALATION)
+    if _has(text, "streak", "points", "badge", "challenge", "game", "racha", "puntos", "reto"):
+        chunks.append(GAMIFICATION)
+    if _has(text, "traffic light", "register", "app", "chart", "color", "semaforo", "registrar"):
         chunks.append(_app_help_answer(text))
-    # Siempre incluimos la guía de acción base por si pregunta qué hacer.
+    # Always include the base action guide in case they ask what to do.
     chunks.append(
-        "Semáforo: verde=normal, amarillo=atención (repetir y vigilar), "
-        "rojo=crítico (actuar y reportar al oficial médico)."
+        "Traffic light: green=normal, yellow=attention (repeat and watch), "
+        "red=critical (act and report to the flight surgeon)."
     )
     return "\n".join(chunks)
 
@@ -580,10 +748,10 @@ class ChatRequest(BaseModel):
 def chat(payload: ChatRequest, session: Session = Depends(get_session)):
     ctx = build_context(session, payload.astronaut_id)
 
-    # 1) Núcleo por reglas (siempre disponible, es el fallback).
+    # 1) Rule-based core (always available, it's the fallback).
     rule_reply = rule_based_reply(payload.message, session, payload.astronaut_id, ctx)
 
-    # 2) Capa LLM opcional, anclada a los mismos hechos + contexto.
+    # 2) Optional LLM layer, grounded in the same facts + context.
     facts = _facts_for(payload.message, ctx)
     context_summary = _context_summary_text(ctx)
     llm = llm_reply(payload.message, facts, context_summary, payload.history)
@@ -591,7 +759,7 @@ def chat(payload: ChatRequest, session: Session = Depends(get_session)):
     reply = llm or rule_reply
     return {
         "reply": reply,
-        "source": "llm" if llm else "reglas",
+        "source": "llm" if llm else "rules",
         "alerts": ctx["alerts"],
         "disclaimer": DISCLAIMER,
     }
@@ -599,18 +767,18 @@ def chat(payload: ChatRequest, session: Session = Depends(get_session)):
 
 @router.get("/status")
 def status(astronaut_id: str = "default", session: Session = Depends(get_session)):
-    """Saludo + alertas proactivas para que el widget avise al abrirse."""
+    """Greeting + proactive alerts so the widget can warn when it opens."""
     ctx = build_context(session, astronaut_id)
     if not ctx["has_data"]:
         greeting = (
-            "¡Hola! Soy tu asistente de salud. Aún no registras mediciones hoy — "
-            "ingresa tus indicadores y te ayudo a interpretarlos."
+            "Hi! I'm your health assistant. You haven't logged any measurements yet — "
+            "enter your indicators and I'll help you read them."
         )
     elif ctx["alerts"]:
         n = len(ctx["alerts"])
-        greeting = f"Atención: {n} indicador(es) fuera de verde ({ctx['age_text']}). Pregúntame «¿qué hago?»."
+        greeting = f"Heads up: {n} indicator(s) outside green ({ctx['age_text']}). Ask me \"what should I do?\"."
     else:
-        greeting = f"Todo en verde ✅ ({ctx['age_text']}). ¿En qué te ayudo?"
+        greeting = f"All green ✅ ({ctx['age_text']}). How can I help?"
     return {
         "greeting": greeting,
         "alerts": ctx["alerts"],
