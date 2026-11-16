@@ -67,7 +67,7 @@ button { font: inherit; color: inherit; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: grid; gap: 16px;
 }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; box-shadow: none; min-width: 0; position: relative; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: none; min-width: 0; position: relative; }
 /* marcas de esquina, como las de un diagrama impreso */
 .card::before { content: ""; position: absolute; inset: -4px; pointer-events: none; --c: var(--muted);
   background:
@@ -85,10 +85,10 @@ button { font: inherit; color: inherit; }
 .top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
 .brand h1 { font-family: var(--f-display); font-weight: 300; font-size: clamp(28px, 4.6vw, 44px); line-height: 1; margin: 6px 0 0; letter-spacing: .2em; text-transform: uppercase; text-wrap: balance; }
 .synthetic { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-data); font-size: 11px; font-weight: 600; letter-spacing: .14em;
-  padding: 3px 8px; border-radius: 2px; white-space: nowrap; border: 1px dashed var(--warn); color: var(--warn); background: var(--warn-soft); }
+  padding: 3px 8px; border-radius: 999px; white-space: nowrap; border: 1px dashed var(--warn); color: var(--warn); background: var(--warn-soft); }
 .crew { display: flex; flex-wrap: wrap; gap: 6px; }
 .crew button { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface);
-  border-radius: 2px; cursor: pointer; font-family: var(--f-data); font-size: 13px; }
+  border-radius: 10px; cursor: pointer; font-family: var(--f-data); font-size: 13px; }
 .crew button:hover { border-color: var(--accent); }
 .crew button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
 .crew .sx { color: var(--muted); font-size: 11px; }
@@ -97,6 +97,10 @@ button { font: inherit; color: inherit; }
 [data-st="1"] > .dot, .dot[data-st="1"] { background: var(--warn); }
 [data-st="2"] > .dot, .dot[data-st="2"] { background: var(--crit); }
 
+.quick { display: flex; flex-wrap: wrap; gap: 10px; }
+.quick .btn { padding: 10px 16px; font-size: 14px; }
+.quick .btn[aria-expanded="true"]:not(.primary) { border-color: var(--accent); color: var(--accent); }
+
 /* ---------- línea de tiempo ---------- */
 .timeline { padding: 14px 16px 12px; display: grid; gap: 10px; }
 .tl-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
@@ -104,10 +108,10 @@ button { font: inherit; color: inherit; }
 .phase { font-size: 13px; color: var(--muted); }
 .phase b { color: var(--ink); font-weight: 600; }
 .tl-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
-.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 2px; padding: 6px 10px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 6px 10px; cursor: pointer; font-size: 13px; white-space: nowrap; }
 .btn:hover { border-color: var(--accent); color: var(--accent); }
 .btn.icon { font-family: var(--f-data); padding-inline: 11px; }
-.strip { width: 100%; height: 22px; display: block; cursor: pointer; border-radius: 0; overflow: hidden; }
+.strip { width: 100%; height: 22px; display: block; cursor: pointer; border-radius: 6px; overflow: hidden; }
 .strip rect[data-st="0"] { fill: var(--ok-soft); }
 .strip rect[data-st="1"] { fill: var(--warn); }
 .strip rect[data-st="2"] { fill: var(--crit); }
@@ -213,7 +217,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
 .status-h { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .status-h h2 { font-family: var(--f-display); font-size: 28px; font-weight: 500; margin: 0; line-height: 1.05; text-wrap: balance; text-transform: uppercase; letter-spacing: .08em; }
 .pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-data); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 2px; background: var(--surface-2); color: var(--muted); }
+  padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
 .pill[data-st="0"] { background: var(--ok-soft); color: var(--ok); }
 .pill[data-st="1"] { background: var(--warn-soft); color: var(--warn); }
 .pill[data-st="2"] { background: var(--crit-soft); color: var(--crit); }
@@ -222,7 +226,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
 .reasons li { display: flex; gap: 10px; align-items: baseline; }
 .reasons li .dot { transform: translateY(1px); }
 .reasons b { font-weight: 600; }
-.guide { background: var(--surface-2); border-radius: 2px; padding: 12px 14px; display: grid; gap: 8px; }
+.guide { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; }
 .guide h3 { margin: 0; font-size: 13px; font-family: var(--f-data); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .guide ol { margin: 0; padding-left: 20px; display: grid; gap: 5px; }
 .guide li::marker { font-family: var(--f-data); color: var(--muted); }
@@ -242,7 +246,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
 .ind[data-st="2"] .stripe { background: var(--crit); }
 .ind .nm { font-weight: 600; display: block; }
 .ind .meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-.src { font-family: var(--f-data); font-size: 10px; letter-spacing: .08em; padding: 0 5px; border: 1px solid var(--line); border-radius: 3px; }
+.src { font-family: var(--f-data); font-size: 10px; letter-spacing: .08em; padding: 1px 8px; border: 1px solid var(--line); border-radius: 999px; }
 .ind .val { text-align: right; font-family: var(--f-data); font-variant-numeric: tabular-nums; }
 .ind .val strong { font-size: 18px; font-weight: 600; }
 .ind .val small { color: var(--muted); font-size: 11px; display: block; line-height: 1.2; }
@@ -252,12 +256,41 @@ input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
 .spark .sb { fill: var(--band); }
 .spark polyline { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linejoin: round; }
 @media (max-width: 480px) { .ind { grid-template-columns: 4px minmax(0, 1fr) minmax(76px, auto); } .spark { display: none; } }
+/* siempre en filas de a dos; con poco ancho se quita la minigráfica y, en el celular, el valor baja debajo del nombre */
+.inds { container-type: inline-size; }
+#indList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#indList .ind:nth-child(odd) { border-right: 1px solid var(--line); }
+#indList .ind { grid-template-columns: 4px minmax(0, 1fr) 72px minmax(70px, auto); gap: 10px; padding-right: 14px; }
+#indList .spark { width: 72px; }
+/* formas redondeadas: cada signo es una ficha propia, con la etiqueta de origen en píldora */
+.card.inds { padding: 6px 0 12px; }
+/* esquinas curvas en toda la página: las marcas de esquina de las tarjetas ya no aplican */
+.card::before { content: none !important; }
+.card:not(.trend) { overflow: hidden; } /* la de tendencia no recorta: su etiqueta flotante puede salirse */
+#indList { gap: 8px; padding: 0 12px; }
+#indList .ind, #indList .ind:nth-child(odd) { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px 10px 0; overflow: hidden; }
+#indList .ind .stripe { width: 4px; margin: 6px 0 6px 8px; border-radius: 999px; }
+#indList .ind { grid-template-columns: 12px minmax(0, 1fr) 72px minmax(70px, auto); }
+#indList .ind.sel { border-color: var(--accent); }
+#indList .src { border-radius: 999px; padding: 1px 8px; }
+#indList .spark .sb { rx: 4px; }
+@container (max-width: 640px) {
+  #indList .ind { grid-template-columns: 12px minmax(0, 1fr) auto; }
+  #indList .spark { display: none; }
+}
+@container (max-width: 440px) {
+  #indList { gap: 6px; padding: 0 8px; }
+  #indList .ind { grid-template-columns: 12px minmax(0, 1fr); gap: 2px 10px; padding-right: 8px; }
+  #indList .ind .stripe { grid-row: 1 / span 2; }
+  #indList .ind .val { grid-column: 2; text-align: left; }
+  #indList .ind .val small { display: inline; margin-left: 6px; }
+}
 
 /* gráfica de tendencia */
 .trend { padding: 14px 16px 12px; display: grid; gap: 10px; }
 .trend-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px; }
 .trend-head h2 { font-family: var(--f-display); font-size: 24px; margin: 2px 0 0; font-weight: 500; line-height: 1.1; text-transform: uppercase; letter-spacing: .08em; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .seg button { border: 0; background: var(--surface); padding: 6px 12px; cursor: pointer; font-size: 13px; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
@@ -308,8 +341,10 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.appbar .synthetic { margin-left: auto; }
-.burger { width: 40px; height: 40px; flex: none; border: 1px solid var(--line); border-radius: 2px; background: var(--surface); color: var(--ink);
+.appbar .sound { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+.btn.sound[aria-pressed="true"] .live-dot { background: var(--ok); border-color: var(--ok); }
+@media (max-width: 640px) { .appbar .wordmark { display: none; } }
+.burger { width: 40px; height: 40px; flex: none; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink);
   display: grid; place-content: center; gap: 4px; cursor: pointer; }
 .burger span { display: block; width: 18px; height: 2px; background: currentColor; border-radius: 2px; }
 .burger:hover { border-color: var(--accent); color: var(--accent); }
@@ -343,7 +378,7 @@ body.on-splash .burger:hover { color: #7aa3cc; border-color: #7aa3cc; }
 .drawer .subnav a:last-of-type { border-bottom: 0; }
 .drawer .subnav a[aria-current="true"] { border-left-color: var(--accent); color: var(--accent); background: var(--surface-2); }
 .subnav .sx { color: var(--muted); font-size: 11px; }
-.nbadge { margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; white-space: nowrap; }
+.nbadge { margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
 .nbadge[data-st="1"] { background: var(--warn-soft); color: var(--warn); }
 .nbadge[data-st="2"] { background: var(--crit); color: var(--bg); }
 /* aviso en el botón de menú cuando alguien de la tripulación está en alerta */
@@ -364,7 +399,7 @@ body.on-splash .burger:hover { color: #7aa3cc; border-color: #7aa3cc; }
 .splash-title span { display: block; color: #7aa3cc; font-weight: 500; font-size: .42em; letter-spacing: .9em; margin-top: .5em; margin-right: -0.6em; }
 .splash-sub { margin: 0; max-width: 52ch; color: #d9c7ae; font-size: 15px; text-shadow: 0 1px 10px #0f1114, 0 0 2px #0f1114; }
 .splash-cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px; }
-.cta { display: inline-block; padding: 11px 22px; border-radius: 2px; text-decoration: none; font-family: var(--f-data); font-size: 13px; font-weight: 500;
+.cta { display: inline-block; padding: 11px 22px; border-radius: 10px; text-decoration: none; font-family: var(--f-data); font-size: 13px; font-weight: 500;
   letter-spacing: .14em; text-transform: uppercase; color: #f0dcc4; border: 1px solid rgba(240, 220, 196, .5); background: rgba(15, 17, 20, .55); }
 .cta:hover { border-color: #7aa3cc; color: #7aa3cc; }
 .cta.primary { background: #f0dcc4; color: #0f1114; border-color: #f0dcc4; }
@@ -434,13 +469,13 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .fcard h3 { margin: 0; font-size: 15px; font-weight: 600; }
 .fcard p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 2px; background: var(--surface-2);
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2);
   font-family: var(--f-data); font-size: 12px; cursor: pointer; }
 button.chip:hover { border-color: var(--accent); color: var(--accent); }
 .chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .chip.ghost { cursor: default; border-style: dashed; background: transparent; color: var(--muted); }
 .fcard-f { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 11.5px; color: var(--muted); padding-top: 8px; border-top: 1px dashed var(--line); }
-.ci-sx { border: 1px dashed var(--line); border-radius: 2px; padding: 10px 14px 12px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; min-width: 0; }
+.ci-sx { border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px 12px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; min-width: 0; }
 .ci-sx legend { font-weight: 600; font-size: 13px; padding: 0 6px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .ci-sx .hint { font-weight: 400; font-size: 11.5px; color: var(--muted); }
 .ci-sx label { display: inline-flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
@@ -448,8 +483,30 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 
 /* lectura en vivo desde el celular */
 .livebar { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 8px 12px;
-  border: 1px dashed var(--accent); background: var(--accent-soft); font-size: 12.5px; border-radius: 2px; }
+  border: 1px dashed var(--accent); background: var(--accent-soft); font-size: 12.5px; border-radius: 10px; }
 .livebar b { font-family: var(--f-data); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--crit); }
+
+/* ---------- alarma sonora ---------- */
+.alarmbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 61px); z-index: 35; background: var(--crit); color: #14100d;
+  border-bottom: 2px solid #14100d; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+.alarmbar[data-st="1"] { background: var(--warn); }
+.alarmbar[data-st="ok"] { background: var(--ok); }
+.alarmbar[data-st="2"] { animation: alarmflash 1s steps(2, start) infinite; }
+@keyframes alarmflash { 50% { background: #ffd9cf; } }
+.alarm-in { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px)); }
+.alarm-txt { display: grid; gap: 2px; min-width: 0; flex: 1 1 320px; }
+.alarm-txt b { font-family: var(--f-display); font-weight: 700; font-size: 24px; letter-spacing: .1em; text-transform: uppercase; line-height: 1.1; }
+.alarm-txt span { font-size: 15px; font-weight: 600; }
+.alarm-txt small { font-size: 12px; }
+.alarm-txt span, .alarm-txt em { white-space: pre-line; }
+.alarm-txt em { font-style: normal; font-size: 13.5px; line-height: 1.4; }
+.alarm-stop { border: 2px solid #14100d; background: #14100d; color: #f0dcc4; border-radius: 10px; padding: 12px 26px; cursor: pointer; display: grid; gap: 1px; text-align: center;
+  font-family: var(--f-display); font-weight: 700; font-size: 24px; letter-spacing: .16em; text-transform: uppercase; line-height: 1; }
+.alarm-stop small { font-family: var(--f-data); font-size: 10.5px; font-weight: 500; letter-spacing: .08em; text-transform: none; }
+.alarm-stop:hover { background: #2a221b; }
+.alarmbar:not([data-st="2"]) .alarm-stop { display: none; }
+@media (prefers-reduced-motion: reduce) { .alarmbar[data-st="2"] { animation: none; } }
 
 /* ---------- chequeo propio ---------- */
 .who-pick { display: grid; gap: 6px; justify-items: end; }
@@ -463,7 +520,7 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 .ci-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
 .ci-field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0; }
 .ci-field label { font-weight: 600; font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.ci-field .in { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 2px; background: var(--surface-2); }
+.ci-field .in { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
 .ci-field .in:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .ci-field input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font-family: var(--f-data); font-size: 16px; padding: 8px 10px; }
 .ci-field input:focus { outline: none; }
@@ -472,7 +529,7 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 .ci-field .err { font-size: 12px; color: var(--crit); }
 .ci-field.bad .in { border-color: var(--crit); }
 .ci-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-.ci-res { display: grid; gap: 12px; border-left: 6px solid var(--nodata); padding: 12px 14px; background: var(--surface-2); border-radius: 0 2px 2px 0; }
+.ci-res { display: grid; gap: 12px; border-left: 6px solid var(--nodata); padding: 12px 14px; background: var(--surface-2); border-radius: 10px; }
 .ci-res[data-st="0"] { border-left-color: var(--ok); } .ci-res[data-st="1"] { border-left-color: var(--warn); } .ci-res[data-st="2"] { border-left-color: var(--crit); }
 .ci-res[data-st="w"] { border-left-color: var(--warn); border-left-style: dashed; }
 .ci-res h3 { margin: 0; font-family: var(--f-display); font-size: 22px; text-transform: uppercase; letter-spacing: .08em; }
@@ -492,8 +549,16 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
 <header class="appbar" id="appbar">
   <button class="burger" id="burger" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer"><span></span><span></span><span></span></button>
   <a class="wordmark" href="#">Interstellar Signals</a>
+  <button class="btn sound" id="soundBtn" type="button" aria-pressed="false" title="Las alarmas rojas suenan y dicen qué indicador está mal hasta que alguien pulsa Parada"><i class="live-dot" aria-hidden="true"></i><span>Sonido apagado</span></button>
   <span class="synthetic" title="Generados por el simulador del equipo v0.3; no son datos de personas reales">DATOS SINTÉTICOS</span>
 </header>
+
+<div class="alarmbar" id="alarmBar" role="alert" hidden>
+  <div class="alarm-in">
+    <div class="alarm-txt"><b id="alarmHead"></b><span id="alarmText"></span><em id="alarmDo"></em><small id="alarmNote"></small></div>
+    <button class="alarm-stop" id="alarmStop" type="button">Parada<small>ya lo estamos atendiendo</small></button>
+  </div>
+</div>
 
 <div class="scrim" id="scrim" hidden></div>
 <nav class="drawer" id="drawer" aria-label="Secciones">
@@ -533,16 +598,20 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
     <div class="who-pick"><span class="eyebrow">¿Quién eres?</span><nav class="crew" id="crew" aria-label="Elige tu perfil"></nav></div>
   </header>
 
-  <section class="card checkin" aria-labelledby="ci-title">
+  <div class="quick">
+    <button class="btn primary" type="button" id="ciToggle" aria-expanded="false" aria-controls="ciCard">Hacer mi chequeo</button>
+    <button class="btn" type="button" id="simToggle" aria-expanded="false" aria-controls="simCard" title="Recorre los 210 días de la misión simulada, día por día o en reproducción continua">Simulación del vuelo</button>
+  </div>
+
+  <section class="card checkin" id="ciCard" aria-labelledby="ci-title" hidden>
     <div class="ci-head">
       <div>
         <div class="eyebrow" id="ci-eyebrow">Chequeo de hoy</div>
         <h2 id="ci-title">Registra tus mediciones</h2>
         <p class="ci-intro">Escribe lo que mediste. Cada valor se compara con tu propia banda y con los límites clínicos, y te dice qué hacer. Así decides tú los primeros pasos, sin esperar a Tierra.</p>
       </div>
-      <button class="btn primary" type="button" id="ciToggle" aria-expanded="false" aria-controls="ciForm">Hacer mi chequeo</button>
     </div>
-    <form id="ciForm" hidden novalidate>
+    <form id="ciForm" novalidate>
       <div class="ci-grid" id="ciGrid"></div>
       <fieldset class="ci-sx" id="ciSymptoms">
         <legend>Señales de defensas <span class="src">MANUAL</span> <span class="hint">una vez por semana · marca lo que notes</span></legend>
@@ -561,7 +630,7 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
     </form>
   </section>
 
-  <section class="card timeline" aria-label="Día de misión">
+  <section class="card timeline" id="simCard" aria-label="Simulación del vuelo" hidden>
     <div class="tl-head">
       <div class="daybig" id="daybig">MD 71</div>
       <div class="phase" id="phase"></div>
@@ -576,12 +645,6 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
     <svg class="strip" id="strip" preserveAspectRatio="none" role="img" aria-label="Estado general de cada día de la misión"></svg>
     <input type="range" id="day" min="0" max="209" value="0" aria-label="Día de misión">
     <div class="strip-axis"><span id="axL">L−30</span><span>Lanzamiento</span><span id="axR">MD 180</span></div>
-  </section>
-
-  <section class="focus" aria-labelledby="focus-title">
-    <div class="focus-head"><div><div class="eyebrow">Los cuatro cambios que nombra el reto</div><h2 id="focus-title">¿Qué estoy vigilando?</h2></div>
-      <p class="chart-note">Toca un indicador para ver su tendencia. «Directa» significa que el dato mide el problema; «indirecta», que solo vigila señales o lo que te protege.</p></div>
-    <div class="focus-grid" id="focusGrid"></div>
   </section>
 
   <div class="main">
@@ -620,6 +683,12 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
       </section>
     </div>
   </div>
+
+  <section class="focus" aria-labelledby="focus-title">
+    <div class="focus-head"><div><div class="eyebrow">Los cuatro cambios que nombra el reto</div><h2 id="focus-title">¿Qué estoy vigilando?</h2></div>
+      <p class="chart-note">Toca un indicador para ver su tendencia. «Directa» significa que el dato mide el problema; «indirecta», que solo vigila señales o lo que te protege.</p></div>
+    <div class="focus-grid" id="focusGrid"></div>
+  </section>
 
   <section class="card trend" aria-label="Tendencia">
     <div class="trend-head">
@@ -1013,6 +1082,7 @@ function render() {
   const states = Object.fromEntries(ORDER.map(k => [k, indState(a, i, k)]));
 
   applyLive(a, i, states);
+  Alarm.check(a, i, states);
   renderCrewNav(d);
 
   // tripulación
@@ -1518,11 +1588,18 @@ function buildCheckin() {
       <span class="hint">${hint}</span><span class="err" hidden></span>
     </div>`).join("");
   $("#ciToggle").addEventListener("click", () => {
-    const f = $("#ciForm"), open = f.hidden;
+    const f = $("#ciCard"), open = f.hidden;
     f.hidden = !open;
     $("#ciToggle").setAttribute("aria-expanded", String(open));
     $("#ciToggle").textContent = open ? "Cerrar chequeo" : "Hacer mi chequeo";
     if (open) $("#ci-hr_rest").focus();
+  });
+  $("#simToggle").addEventListener("click", () => {
+    const c = $("#simCard"), open = c.hidden;
+    c.hidden = !open;
+    $("#simToggle").setAttribute("aria-expanded", String(open));
+    $("#simToggle").textContent = open ? "Cerrar simulación" : "Simulación del vuelo";
+    if (!open) Live.stop(); // al guardarla no sigue avanzando sola
   });
   $("#ciSensor").addEventListener("click", () => {
     const a = DATA[state.aid];
@@ -1596,6 +1673,146 @@ function evaluateCheckin() {
     <p class="note">Orientativa. No reemplaza el criterio del oficial médico.</p></div></div>`;
 }
 
+// ---------- alarma sonora ----------
+// Cuando alguien entra en ROJO suena un aviso y una voz dice quién es y qué indicador está mal. Se repite hasta que
+// una persona pulsa «Parada», que significa «ya lo estamos atendiendo». El amarillo solo se anuncia una vez.
+// Salta con lecturas que llegan (del celular o de la reproducción en vivo), no al hojear días a mano.
+// El navegador exige un clic antes de dejar sonar algo: por eso existe el botón «Sonido».
+const Alarm = (() => {
+  const SAY = { hr_rest: "Frecuencia cardíaca en reposo", bp_sys: "Presión sistólica", bp_dia: "Presión diastólica", spo2: "Saturación de oxígeno",
+    temp: "Temperatura", glucose: "Glucosa", sleep: "Sueño", mood: "Ánimo", exercise: "Ejercicio", fitness: "Aptitud física" };
+  const UNIT = { lpm: "latidos por minuto", mmHg: "milímetros de mercurio", "%": "por ciento", "°C": "grados", "mg/dL": "miligramos por decilitro",
+    h: "horas", "/ 5": "sobre cinco", min: "minutos", "% prevuelo": "por ciento del prevuelo" };
+  // Qué hacer, dicho en voz alta: primero descartar un fallo del sensor, luego la acción propia del indicador.
+  // Son primeros pasos orientativos escritos por el equipo, los mismos de la guía de acción en versión corta.
+  const DO = {
+    hr_rest: "Revisa que la camisa esté ajustada al pecho. Siéntate, respira con calma cinco minutos y mide otra vez.",
+    bp: "Siéntate, descansa cinco minutos y repite la toma con el manguito en el mismo brazo. Di si tienes dolor de cabeza, mareo o visión borrosa.",
+    spo2: "Revisa que el anillo esté bien puesto y deja la mano quieta. Si sigue baja, revisa con la tripulación el oxígeno y el dióxido de carbono de la cabina.",
+    temp: "Revisa que el sensor de la camisa toque la piel y mide otra vez. Si tienes escalofríos o tos, mantén distancia del resto de la tripulación.",
+    sleep: "Comprueba que llevaste el reloj puesto toda la noche. Hoy baja la luz y evita pantallas una hora antes de dormir.",
+    mood: "Habla con alguien de la tripulación sobre cómo te sientes y pide una conferencia privada con el equipo de apoyo en Tierra.",
+    exercise: "Retoma hoy la sesión de ejercicio programada. Si un dolor o la carga de trabajo te lo impide, regístralo.",
+    fitness: "Revisa el plan de ejercicio con el oficial médico.",
+    immune: "Anota qué señales tienes y desde cuándo. Si es en la piel, toma una foto para comparar mañana.",
+  };
+  const doKey = (k) => (k === "bp_sys" || k === "bp_dia") ? "bp" : k;
+  const bar = $("#alarmBar"), btn = $("#soundBtn");
+  const active = new Map(), acked = new Set(), told = new Set();
+  const also = new Map(); // amarillos que llegan mientras suena un rojo: se suman a la alarma en vez de perderse
+  let sound = false, ctx = null, gen = 0, loopT = 0, hideT = 0;
+
+  function beep() {
+    if (!ctx) return;
+    [[880, 0], [660, 0.22], [880, 0.44]].forEach(([f, t]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + t;
+      o.type = "square"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+      o.connect(g).connect(ctx.destination); o.start(t0); o.stop(t0 + 0.2);
+    });
+  }
+  function say(text, done) {
+    if (!("speechSynthesis" in window)) { setTimeout(done, 400); return; }
+    const u = new SpeechSynthesisUtterance(text);
+    const v = speechSynthesis.getVoices().find(x => /^es/i.test(x.lang));
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : "es-ES"; u.rate = 0.95;
+    u.onend = u.onerror = () => done();
+    speechSynthesis.speak(u);
+  }
+  // qué está mal: los indicadores en rojo o, si el rojo viene de la regla combinada, los amarillos
+  function describe(aid, states, immune) {
+    let ks = ORDER.filter(k => k !== "glucose" && states[k].st === 2), combo = false;
+    if (!ks.length) { ks = ORDER.filter(k => k !== "glucose" && states[k].st === 1); combo = true; }
+    const shown = ks.map(k => `${IND[k].name} ${fmt(states[k].v, IND[k].nd)} ${IND[k].unit}`);
+    const spoken = ks.map(k => `${SAY[k]}, ${fmt(states[k].v, IND[k].nd)} ${UNIT[IND[k].unit] || ""}`);
+    const todo = [...new Set(ks.map(doKey))].map(k => DO[k]).filter(Boolean);
+    if (immune && immune.st === 1) { shown.push("Señales de defensas"); spoken.push("Señales de defensas"); todo.push(DO.immune); }
+    return { aid, shown: shown.join(" · "), spoken: spoken.join(". "), combo, todo: todo.join(" ") };
+  }
+  const speech = () => [...active.values()].map(a => `Alerta roja. ${a.aid}. ${a.spoken}.${a.combo ? " Varios indicadores en amarillo a la vez." : ""} ${a.todo}`).join(" ") + " Avisa al oficial médico y dile estos valores." + extra();
+  // cada amarillo que se sumó se dice una vez, en la siguiente vuelta
+  function extra() {
+    let t = "";
+    for (const a of also.values()) if (!a.said) { a.said = true; t += ` Además, atención. ${a.aid}. ${a.spoken}. En amarillo. ${a.todo}`; }
+    return t;
+  }
+  function loop() {
+    clearTimeout(loopT);
+    if (!active.size || !sound) return;
+    const g = ++gen;
+    beep();
+    loopT = setTimeout(() => { if (g !== gen) return; say(speech(), () => { if (g === gen) loopT = setTimeout(loop, 2200); }); }, 750);
+  }
+  function silence() { gen++; clearTimeout(loopT); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+  function paint() {
+    clearTimeout(hideT);
+    if (!active.size) { bar.hidden = true; return; }
+    const list = [...active.values()];
+    bar.hidden = false; bar.dataset.st = 2;
+    const ys = [...also.values()], many = list.length + ys.length > 1;
+    const who = [...new Set(list.map(a => a.aid))];
+    $("#alarmHead").textContent = `Alarma roja · ${who.join(" y ")}` + (many ? ` · ${list.length + ys.length} problemas` : "");
+    const line = (a, tag) => (many ? `${tag} · ${a.aid}: ` : "") + a.shown + (a.combo && tag === "ROJO" ? " (dos amarillos a la vez)" : "");
+    $("#alarmText").textContent = [...list.map(a => line(a, "ROJO")), ...ys.map(a => line(a, "AMARILLO"))].join("\n");
+    $("#alarmDo").textContent = [...new Set([...list, ...ys].map(a => a.todo).filter(Boolean))].join("\n");
+    $("#alarmNote").textContent = sound ? "Sonando hasta que alguien pulse Parada." : "El sonido está apagado: actívalo con el botón «Sonido» de arriba.";
+  }
+  function flash(st, head, text, ms, todo) { // aviso breve que se quita solo
+    bar.hidden = false; bar.dataset.st = st;
+    $("#alarmHead").textContent = head; $("#alarmText").textContent = text; $("#alarmDo").textContent = todo || ""; $("#alarmNote").textContent = "";
+    clearTimeout(hideT); hideT = setTimeout(() => { if (!active.size) bar.hidden = true; else paint(); }, ms);
+  }
+  function raise(key, info, st) {
+    if (st === 2) {
+      if (acked.has(key) || active.has(key)) return;
+      active.set(key, info); paint(); loop();
+    } else if (st === 1 && !told.has(key)) {
+      told.add(key);
+      if (active.size) { also.set(key, { ...info }); paint(); return; } // se suma a la alarma roja que ya suena
+      flash(1, `Atención · ${info.aid}`, info.shown, 12000, info.todo);
+      if (sound) { beep(); setTimeout(() => say(`Atención. ${info.aid}. ${info.spoken}. En amarillo. ${info.todo}`, () => {}), 750); }
+    }
+  }
+  const api = {
+    check(a, i, states) {
+      const L = state.live;
+      if (L && L.aid === state.aid && L.overall != null) {
+        if (L.overall >= 1) raise(`vivo|${L.aid}|${L.id}`, describe(L.aid, states, L.immune), L.overall);
+      } else if (Live.on) {
+        if (i === 0) { for (const k of [...acked, ...told]) if (k.startsWith("sim|")) { acked.delete(k); told.delete(k); } } // nueva vuelta del bucle
+        const d = a.day[i];
+        for (const [id, o] of Object.entries(DATA)) {
+          const j = o.day.indexOf(d); if (j < 0 || o.status[j] < 1) continue;
+          let s0 = j; while (s0 > 0 && o.status[s0 - 1] >= 1) s0--; // un episodio = una alarma
+          const st = id === state.aid ? states : Object.fromEntries(ORDER.map(k => [k, indState(o, j, k)]));
+          raise(`sim|${id}|${s0}|${o.status[j]}`, describe(id, st, null), o.status[j]);
+        }
+      }
+    },
+    stop() {
+      if (!active.size) return;
+      for (const k of active.keys()) acked.add(k);
+      const who = [...active.values()].map(a => a.aid).join(" y ");
+      active.clear(); also.clear(); silence();
+      flash("ok", "Alarma atendida", `${who} · parada a las ${new Date().toLocaleTimeString("es-CO", { hour12: false })}. Sigue la guía de acción.`, 6000);
+    },
+  };
+  $("#alarmStop").addEventListener("click", api.stop);
+  btn.addEventListener("click", () => {
+    sound = !sound;
+    btn.setAttribute("aria-pressed", String(sound));
+    btn.querySelector("span").textContent = sound ? "Sonido activo" : "Sonido apagado";
+    if (sound) {
+      try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); ctx.resume(); } catch (e) { ctx = null; }
+      if (active.size) loop(); else { beep(); setTimeout(() => say("Alarmas sonoras activadas.", () => {}), 700); }
+    } else silence();
+    if (active.size) paint();
+  });
+  if ("speechSynthesis" in window) speechSynthesis.getVoices(); // algunas veces la lista de voces llega tarde
+  return api;
+})();
+
 // ---------- lecturas en vivo desde el celular ----------
 // El celular (prototipo/control.html) hace de camisa, reloj y entradas manuales: envía una lectura SIMULADA al backend
 // y esta página la recoge por sondeo. Cada valor se evalúa con las mismas reglas del chequeo (evalReading).
@@ -1644,7 +1861,7 @@ const LiveLink = (() => {
     if (soloEco && state.live && state.live.aid === R.astronaut) { // la ecografía se suma a la lectura que ya estaba en pantalla
       state.live.ultrasound = R.ultrasound; state.live.at = new Date().toLocaleTimeString("es-CO", { hour12: false }); render(); return;
     }
-    state.live = { ultrasound: R.ultrasound || null, aid: R.astronaut, values: R.values || {}, symptoms: R.symptoms || [], scenario: R.scenario || "",
+    state.live = { id: R.seq, ultrasound: R.ultrasound || null, aid: R.astronaut, values: R.values || {}, symptoms: R.symptoms || [], scenario: R.scenario || "",
       at: new Date().toLocaleTimeString("es-CO", { hour12: false }), overall: null };
     if (state.aid !== R.astronaut) chooseAstronaut(R.astronaut); else render();
     // abre la tendencia del indicador que más llama la atención
