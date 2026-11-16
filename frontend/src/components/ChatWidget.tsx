@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 // On-board health assistant. Floating widget that talks to the backend (/api/chat).
 // The backend answers in hybrid mode: offline rule-based core + optional LLM layer.
@@ -6,6 +6,31 @@ import { useEffect, useRef, useState } from "react";
 // not medical advice. The bot speaks English; the rest of the app is in Spanish.
 
 const ASTRONAUT_ID = "default";
+
+// Ghost-text autocomplete: as you type, the best-matching phrase is suggested in
+// gray; Right Arrow (or Tab) accepts it. Purely client-side, matched by prefix.
+const SUGGESTIONS = [
+  "How am I doing?",
+  "What should I do if something is red?",
+  "What is SpO2?",
+  "What is heart rate?",
+  "What is blood pressure?",
+  "What is glucose?",
+  "What is body temperature?",
+  "What is mood?",
+  "What is the WHO-5?",
+  "What is the KSS?",
+  "How do I measure blood pressure?",
+  "How do I measure SpO2?",
+  "How do I measure temperature?",
+  "How do I log a measurement?",
+  "How does the traffic light work?",
+  "What are the 5 hazards?",
+  "Tell me about sleep",
+  "When should I escalate to the flight surgeon?",
+  "Give me a gamification tip",
+  "Is this validated?",
+];
 
 type Role = "user" | "assistant";
 interface Msg {
@@ -59,6 +84,24 @@ export default function ChatWidget() {
 
   const alertCount = status?.alerts.length ?? 0;
   const hasCritical = status?.alerts.some((a) => a.status === "critical") ?? false;
+
+  // Ghost-text suggestion for the current input (prefix match, case-insensitive).
+  const suggestion =
+    input.length >= 2
+      ? SUGGESTIONS.find(
+          (s) => s.toLowerCase().startsWith(input.toLowerCase()) && s.length > input.length
+        )
+      : undefined;
+  const ghost = suggestion ? suggestion.slice(input.length) : "";
+
+  function handleInputKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (!suggestion) return;
+    const atEnd = e.currentTarget.selectionStart === input.length;
+    if (e.key === "Tab" || (e.key === "ArrowRight" && atEnd)) {
+      e.preventDefault();
+      setInput(suggestion);
+    }
+  }
 
   async function loadStatus() {
     try {
@@ -229,12 +272,28 @@ export default function ChatWidget() {
             }}
             className="p-2 border-t border-slate-700 flex gap-2"
           >
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your question…"
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
-            />
+            <div className="flex-1 relative bg-slate-800 border border-slate-700 rounded-lg overflow-hidden focus-within:border-sky-500">
+              {/* Ghost layer: typed text is transparent (reserves width), suffix is gray. */}
+              <div
+                aria-hidden
+                className="absolute inset-0 px-3 py-2 text-sm whitespace-pre overflow-hidden pointer-events-none"
+              >
+                <span className="text-transparent">{input}</span>
+                <span className="text-slate-500">{ghost}</span>
+              </div>
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                placeholder="Type your question…"
+                className="relative w-full bg-transparent px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            {ghost && (
+              <span className="self-center text-[10px] text-slate-500 whitespace-nowrap">
+                → to complete
+              </span>
+            )}
             <button
               type="submit"
               disabled={sending || !input.trim()}
