@@ -632,7 +632,7 @@ def rule_based_reply(message: str, session: Session, astronaut_id: str, ctx: dic
         return _app_help_answer(text)
 
     # Gamification
-    if _has(text, "streak", "points", "badge", "challenge", "reminder", "motivate", "game", "racha", "puntos", "logro", "reto", "recordatorio"):
+    if _has(text, "streak", "points", "badge", "challenge", "reminder", "motivate", "game", "gamif", "racha", "puntos", "logro", "reto", "recordatorio"):
         return _gamification_answer(session, astronaut_id, ctx)
 
     # Fallback

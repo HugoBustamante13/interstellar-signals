@@ -52,3 +52,12 @@ CC0 allows using and redistributing it without attribution; we cite it anyway as
 - `body_mesh.json`: the result, which `build.py` embeds into `index.html`.
 
 To move a marker, change `TARGETS` in `build_body.py` and run `python prototipo/build_body.py` and then `python prototipo/build.py`.
+
+## Health assistant
+
+The **Assistant** button (bottom right) answers questions about your indicators, the traffic light and the five hazards.
+
+- **Without a server** (GitHub Pages, or `index.html` opened by double-click) the page answers on its own with the rule-based engine. The header shows "on this page".
+- **With the team backend** (`/demo/` served by FastAPI) the page asks `POST /chat`, which can add the optional AI layer. If the backend does not answer, the page falls back to its own engine.
+
+The texts live in one place: `backend/chatbot.py`. `build.py` copies them into the page through `build_chat.py`, so after editing them run `python prototipo/build.py`. The rules themselves (`ChatLocal` in `template.html`) mirror `rule_based_reply` in `chatbot.py`; if you change one, change the other.
