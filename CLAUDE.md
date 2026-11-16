@@ -29,8 +29,9 @@ distancia de la Tierra, gravedad alterada, ambiente cerrado hostil). La distanci
 
 ## Estructura del repo
 ```
-backend/      FastAPI + SQLite (sqlmodel). Endpoints /indicators, /records, /records/latest
-frontend/     React + TS + Vite + Tailwind + Recharts. Mapa corporal, tarjetas, gráficas
+backend/      FastAPI + SQLite (sqlmodel). /indicators, /astronauts, /records, /status, /series y /live (demo)
+              semaforo_bridge.py importa simulador/sim/semaforo.py; seed_demo.py carga la misión sintética
+frontend/     React + TS + Vite + Tailwind + Recharts. Mapa corporal, tarjetas, gráfica con banda personal
 simulador/    Parte de datos (v0.3): simulador sintético + semáforo con línea base personal
   sim/          simulator.py, semaforo.py, evaluate.py y sus JSON de parámetros/umbrales
   out/          datos sintéticos generados (4 astronautas, 30 días pre + 180 en vuelo)
@@ -61,13 +62,16 @@ Simulador / semáforo (8): FC en reposo (`hr_rest`), presión sistólica y diast
 (`bp_sys`, `bp_dia`), SpO2, temperatura, glucosa (semanal), horas de sueño, ánimo
 (1–5), ejercicio/aptitud física.
 
-App (backend/frontend, 7): `heart_rate`, `systolic_bp`, `spo2`, `body_temp`,
-`glucose`, `sleep_hours`, `mood`. Faltan diastólica y ejercicio, y los nombres no
-coinciden con los del simulador.
+App (backend/frontend, 10, desde el 15-nov-2026): los mismos nombres del simulador —
+`hr_rest`, `bp_sys`, `bp_dia`, `spo2`, `temp`, `glucose`, `sleep`, `mood`, `exercise`, `fitness`.
 
-## DOS lógicas de semáforo distintas (decisión pendiente)
-1. **App** (`backend/thresholds.py`, replicado en `frontend/src/data/thresholds.ts`):
-   umbrales clínicos fijos por indicador (normal / atención / crítico).
+## Una sola lógica de semáforo (resuelto el 15-nov-2026)
+Antes había dos: umbrales fijos en la app (`thresholds.py`/`thresholds.ts`) y la línea base del simulador.
+Ahora el backend usa solo la del simulador (`backend/semaforo_bridge.py` importa `semaforo.py` tal cual);
+`thresholds.py` quedó como metadatos y recomendaciones, y el frontend tiene en `frontend/src/data/indicators.ts`
+un espejo de los límites absolutos (lo sobrescribe con `GET /indicators`). `backend/test_semaforo_bridge.py`
+comprueba que los colores de la app coinciden día a día con `simulador/out/mission_synthetic_semaforo.csv`.
+La lógica del simulador, para el pitch:
 2. **Simulador** (`simulador/sim/semaforo.py` + `semaforo_config.json`): línea base
    personal (media ± 2,5 DE de los 28 días previos, mín. 14 lecturas); amarillo = 3
    lecturas seguidas fuera de banda; rojo = límite absoluto clínico, salto de 4 DE
@@ -81,7 +85,8 @@ alarmas). **Decidido (14-nov-2026)** en `docs/decision_integracion_semaforo.md`:
 backend importa `semaforo.py` tal cual (vía `backend/semaforo_bridge.py`) y su lógica
 reemplaza a los colores fijos; nombres canónicos = claves del simulador (`hr_rest`,
 `bp_sys`, `bp_dia`, `spo2`, `temp`, `glucose`, `sleep`, `mood`, `exercise`). El plan de
-implementación (sección 6) aún NO está ejecutado; la sección 7 lista lo abierto para el equipo.
+implementación (sección 6) quedó ejecutado el 15-nov-2026 en los pasos 1–13; el 14 (`bp_counts_once`) sigue
+pendiente. La sección 7 lista lo abierto para el equipo.
 
 ## Honestidad en el pitch (obligatorio)
 - Todos los datos de demo son sintéticos; el simulador no es un modelo fisiológico validado.
@@ -103,9 +108,11 @@ implementación (sección 6) aún NO está ejecutado; la sección 7 lista lo abi
   - `IndicatorCard`: campo vacío → «sin dato» (antes `NaN` crítico); `App.tsx` no envía indicadores vacíos.
   - Timestamps con zona (`datetime.now(timezone.utc)`); la API serializa con `+00:00`.
   - `POST /records` valida con `HealthRecordCreate` (422 ante valores inválidos o registro vacío); `model_dump()` y `lifespan` en vez de APIs deprecadas.
-  - Sistólica 85–90: el error estaba en `docs/health_indicators.md` (resuelto en la decisión del arquitecto; falta corregir ese doc al implementar el plan).
-- Decidir si `HealthRecordCreate` lleva tope `spo2 <= 100` y cotas para `body_temp`/`mood` (hoy solo `>= 0` en los demás).
-- Entorno: venv en `backend/venv` (incluye deps del simulador). Si los subagentes de `.claude/agents/` no aparecen, reiniciar la sesión de Claude Code (el 14-nov no estaban cargados).
+- `HealthRecordCreate` valida rangos de plausibilidad por indicador (p. ej. spo2 50–100, temp 30–45, mood 1–5) y
+  rechaza nombres viejos (`extra="forbid"`): 422.
+- La base SQLite cambió de esquema el 15-nov-2026: si el backend dice «esquema viejo», borrar `backend/health_records.db`
+  (solo tenía datos de prueba) y correr `python seed_demo.py`.
+- Entorno: venv en `backend/venv` (`requirements.txt` ya incluye numpy y pandas; pruebas con `requirements-dev.txt`). Si los subagentes de `.claude/agents/` no aparecen, reiniciar la sesión de Claude Code (el 14-nov no estaban cargados).
 
 ## Gestión de modelos (IMPORTANTE)
 Subagentes en `.claude/agents/`, cada uno con modelo asignado:
@@ -119,8 +126,10 @@ Diseño/arquitectura, bugs difíciles o revisión final → `arquitecto`. Trivia
 No uses `arquitecto` para tareas rutinarias; es el más costoso.
 
 ## Convenciones
-- Umbrales de la app centralizados en `backend/thresholds.py` (fuente de verdad); el
-  frontend los replica en `frontend/src/data/thresholds.ts` — mantener sincronizados.
+- Los límites de color viven solo en `simulador/sim/semaforo_config.json`: el backend los lee de ahí
+  (`semaforo_bridge.absolute_limits`) y el frontend los recibe con `GET /indicators`. `backend/thresholds.py`
+  guarda etiqueta, unidad, rango de entrada y recomendaciones. El espejo local de `frontend/src/data/indicators.ts`
+  solo manda sin backend: si cambia la config, actualízalo con la salida de `GET /indicators`.
 - Umbrales del semáforo del simulador en `simulador/sim/semaforo_config.json`; cada valor
   lleva su estado (medido/referencia/derivado/supuesto/sin fuente) y su fuente.
 - Generar datos nuevos en otra carpeta (`--out otra_carpeta`): `make_charts.py` siempre lee `out/`.

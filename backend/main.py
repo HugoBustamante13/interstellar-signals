@@ -1,16 +1,21 @@
-from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Optional
+"""API del monitor de salud. Contrato: docs/decision_integracion_semaforo.md, sección 5.
 
-from fastapi import FastAPI, Depends, HTTPException
+El color (verde / amarillo / rojo) lo calcula el semáforo del simulador vía semaforo_bridge.py.
+"""
+from contextlib import asynccontextmanager
+from datetime import datetime
+
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
-from models import HealthRecord, init_db, get_session, utcnow
-from thresholds import THRESHOLDS, evaluate, get_recommendation
 import live
+from models import (Astronaut, HealthRecord, HealthRecordCreate, HealthRecordRead, as_utc, get_session, init_db,
+                    mission_day_for, utcnow)
+from semaforo_bridge import compute_series, compute_status, indicators_meta
+from thresholds import INDICATORS
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,87 +41,52 @@ if live.PROTOTIPO_DIR.is_dir():
 
 @app.get("/indicators")
 def list_indicators():
-    """Devuelve la configuración de indicadores (rangos) para que el frontend
-    pueda renderizar formularios y leyendas de color."""
-    return THRESHOLDS
+    """Metadatos de cada indicador y sus límites absolutos (leídos de semaforo_config.json)."""
+    return indicators_meta()
 
 
-class HealthRecordCreate(BaseModel):
-    """Entrada de POST /records: sin id ni timestamp (los fija el servidor)."""
-
-    astronaut_id: str = "default"
-    heart_rate: Optional[float] = Field(default=None, ge=0)
-    systolic_bp: Optional[float] = Field(default=None, ge=0)
-    spo2: Optional[float] = Field(default=None, ge=0)
-    body_temp: Optional[float] = None
-    glucose: Optional[float] = Field(default=None, ge=0)
-    sleep_hours: Optional[float] = Field(default=None, ge=0)
-    mood: Optional[float] = None
+@app.get("/astronauts")
+def list_astronauts(session: Session = Depends(get_session)):
+    now = utcnow()
+    rows = session.exec(select(Astronaut).order_by(Astronaut.astronaut_id)).all()
+    return [{"astronaut_id": a.astronaut_id, "launch_date": a.launch_date.isoformat(), "source": a.source,
+             "current_mission_day": mission_day_for(now, a.launch_date)} for a in rows]
 
 
-@app.post("/records")
-def create_record(
-    payload: HealthRecordCreate, session: Session = Depends(get_session)
-):
-    if all(getattr(payload, f) is None for f in THRESHOLDS):
-        raise HTTPException(
-            status_code=422, detail="Se requiere al menos un indicador."
-        )
-    record = HealthRecord(**payload.model_dump(), timestamp=utcnow())
+@app.post("/records", status_code=201)
+def create_record(payload: HealthRecordCreate, session: Session = Depends(get_session)):
+    astro = session.get(Astronaut, payload.astronaut_id)
+    if astro is None:  # astronauta nuevo: su día 1 es hoy (UTC)
+        astro = Astronaut(astronaut_id=payload.astronaut_id, launch_date=utcnow().date(), source="manual")
+        session.add(astro)
+    ts = as_utc(payload.timestamp) if payload.timestamp else utcnow()
+    record = HealthRecord(**payload.model_dump(exclude={"timestamp"}), timestamp=ts,
+                          mission_day=mission_day_for(ts, astro.launch_date))
     session.add(record)
     session.commit()
     session.refresh(record)
-    return assess_record(record)
+    return {"record": HealthRecordRead.of(record), "status": compute_status(session, payload.astronaut_id)}
 
 
 @app.get("/records")
-def list_records(
-    astronaut_id: str = "default", session: Session = Depends(get_session)
-):
-    statement = (
-        select(HealthRecord)
-        .where(HealthRecord.astronaut_id == astronaut_id)
-        .order_by(HealthRecord.timestamp)
-    )
-    return [serialize(r) for r in session.exec(statement).all()]
+def list_records(astronaut_id: str = "default", session: Session = Depends(get_session)):
+    q = select(HealthRecord).where(HealthRecord.astronaut_id == astronaut_id).order_by(HealthRecord.timestamp)
+    return [HealthRecordRead.of(r) for r in session.exec(q).all()]
 
 
-@app.get("/records/latest")
-def latest_record(astronaut_id: str = "default", session: Session = Depends(get_session)):
-    statement = (
-        select(HealthRecord)
-        .where(HealthRecord.astronaut_id == astronaut_id)
-        .order_by(HealthRecord.timestamp.desc())
-    )
-    record = session.exec(statement).first()
-    if not record:
-        return None
-    return assess_record(record)
+@app.get("/status")
+def get_status(astronaut_id: str = "default", session: Session = Depends(get_session)):
+    status = compute_status(session, astronaut_id)
+    if status is None:
+        raise HTTPException(404, f"No hay registros de {astronaut_id}.")
+    return status
 
 
-def serialize(record: HealthRecord) -> dict:
-    """model_dump con timestamp en UTC con offset (SQLite lo devuelve sin zona)."""
-    data = record.model_dump()
-    ts = data["timestamp"]
-    if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
-    data["timestamp"] = ts.astimezone(timezone.utc)
-    return data
-
-
-def assess_record(record: HealthRecord):
-    """Agrega status + recomendación por cada indicador presente en el registro."""
-    result = serialize(record)
-    assessment = {}
-    for field in THRESHOLDS:
-        value = getattr(record, field, None)
-        if value is None:
-            continue
-        status = evaluate(field, value)
-        assessment[field] = {
-            "value": value,
-            "status": status,
-            "recommendation": get_recommendation(field, status),
-        }
-    result["assessment"] = assessment
-    return result
+@app.get("/series")
+def get_series(astronaut_id: str = "default", indicator: str = Query(...), session: Session = Depends(get_session)):
+    if indicator not in INDICATORS:
+        raise HTTPException(422, f"Indicador desconocido: {indicator}")
+    series = compute_series(session, astronaut_id, indicator)
+    if series is None:
+        raise HTTPException(404, f"No hay registros de {astronaut_id}.")
+    return series
