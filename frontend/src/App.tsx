@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import IndicatorCard from "./components/IndicatorCard";
 import HistoryChart from "./components/HistoryChart";
 import BodyMap, { BODY_PARTS, BodyPart } from "./components/BodyMap";
+import ChatWidget from "./components/ChatWidget";
 import { THRESHOLDS, evaluate, Status } from "./data/thresholds";
 
 const INDICATOR_KEYS = Object.keys(THRESHOLDS);
@@ -137,6 +138,8 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      <ChatWidget />
     </div>
   );
 }
