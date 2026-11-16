@@ -3,15 +3,35 @@ manuales) envía una lectura y la web la recoge por sondeo.
 
 Todo vive en memoria: es para la demostración, no se guarda en la base de datos.
 Los datos que pasan por aquí son SIMULADOS; no vienen de sensores reales.
+
+Clave de la demo: si el backend arranca con la variable de entorno DEMO_KEY, solo quien la conoce puede
+escribir (enviar o quitar lecturas y el contexto). Las páginas la toman de la URL (?k=...) y la mandan en
+el encabezado X-Demo-Key. Sin DEMO_KEY, /live queda abierto como antes (uso local).
 """
+import hmac
 import math
+import os
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from models import utcnow
+
+DEMO_KEY = os.environ.get("DEMO_KEY", "").strip()
+
+
+def require_key(
+    x_demo_key: Optional[str] = Header(default=None), k: Optional[str] = Query(default=None)
+) -> None:
+    """Exige la clave de la demo en las escrituras, si el backend arrancó con DEMO_KEY."""
+    if not DEMO_KEY:
+        return
+    given = (x_demo_key or k or "").encode()
+    if not hmac.compare_digest(given, DEMO_KEY.encode()):
+        raise HTTPException(401, "Falta la clave de la demo o es incorrecta (?k=... en la URL).")
+
 
 router = APIRouter(prefix="/live", tags=["demo en vivo"])
 
@@ -58,7 +78,7 @@ class LiveContext(BaseModel):
     astronauts: dict[str, dict[str, Optional[float]]] = {}
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_key)])
 def send_reading(payload: LiveReading):
     if not payload.values and not payload.symptoms and not payload.ultrasound:
         raise HTTPException(422, "Envía al menos un valor, una señal o una ecografía.")
@@ -84,7 +104,7 @@ def latest_reading(since: int = 0):
     return {"seq": _state["seq"], "reading": None}
 
 
-@router.delete("")
+@router.delete("", dependencies=[Depends(require_key)])
 def clear_reading():
     """El control pide volver a los datos simulados de la misión."""
     _state["seq"] += 1
@@ -92,7 +112,7 @@ def clear_reading():
     return {"seq": _state["seq"]}
 
 
-@router.post("/context")
+@router.post("/context", dependencies=[Depends(require_key)])
 def set_context(payload: LiveContext):
     _state["context"] = payload.model_dump()
     return {"ok": True}
