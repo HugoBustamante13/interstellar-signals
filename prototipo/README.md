@@ -17,6 +17,10 @@ Abre `prototipo/index.html` en el navegador (doble clic). No necesita internet: 
 2. Regenera: `python prototipo/build.py` (requiere pandas).
 3. Recarga `index.html`.
 
+- **Espacios y letra:** usa las variables de `:root` en vez de píxeles sueltos. Espacios `--s1`…`--s7`
+  (4, 8, 12, 16, 24, 32, 48 px); relleno de tarjeta `--pad`; entre tarjetas `--gap-card`; entre secciones
+  `--gap-section`. Letra `--t-xs`…`--t-3xl` (12, 13, 15, 17, 20, 26, 32, 44 px); nada por debajo de 12 px,
+  salvo los textos del SVG de la figura plana, que escalan con ella.
 - `build_data.py` une `mission_synthetic_daily.csv` + `mission_synthetic_semaforo.csv` del simulador y **descarta las columnas `truth_*`**.
 - Nombres de demostración: SIM-001 = Zamar, SIM-002 = Carlos (datos de `simulador/out_2astronautas`).
 
