@@ -1740,15 +1740,139 @@ function evaluateCheckin() {
     <p class="note">Guidance only. It does not replace the crew medical officer's judgment.</p></div></div>`;
 }
 
+// ---------- asistente sin servidor ----------
+// Mismas reglas que backend/chatbot.py (rule_based_reply), dentro de la página, para que el asistente responda
+// sin servidor: en GitHub Pages o con index.html abierto con doble clic. Los textos NO están aquí: build.py los
+// copia de backend/chatbot.py a CHATKB. Si cambian las reglas en chatbot.py, hay que reflejarlas en ChatLocal.
+const CHATKB = {"DISCLAIMER": "I'm not medical advice and the demo data is synthetic. Thresholds are general clinical references (mostly from Earth populations), not NASA alarm criteria.", "LABELS": {"heart_rate": "Heart rate", "systolic_bp": "Systolic blood pressure", "spo2": "SpO2 (oxygen saturation)", "body_temp": "Body temperature", "glucose": "Glucose", "sleep_hours": "Sleep hours", "mood": "Mood"}, "INDICATORS": {"heart_rate": {"que_es": "The number of heartbeats per minute at rest.", "espacio": "In microgravity the cardiovascular system readapts (fluids shift toward the chest and head), so your resting HR can differ from Earth. HRP hazard: altered gravity.", "como_medir": "At rest, seated and calm for 5 min. The wrist/finger sensor reads it; you can also count your pulse for 30 s and multiply by 2.", "facts": null}, "systolic_bp": {"que_es": "The peak pressure in your arteries when the heart beats (the top number).", "espacio": "In flight blood pressure tends to drop a bit versus Earth due to cardiovascular readaptation, so a fixed Earth threshold can cause false alarms. HRP hazard: altered gravity.", "como_medir": "With the cuff at heart level, at rest and without talking. Avoid measuring right after exercise or coffee.", "facts": null}, "spo2": {"que_es": "The percentage of oxygen carried by your red blood cells (saturation).", "espacio": "Tracks oxygenation and, indirectly, cabin air quality (a hostile closed environment controls O2, CO2 and pressure). HRP hazard: hostile closed environment.", "como_medir": "With the pulse oximeter on your finger, still for a few seconds until the reading stabilizes. Warm hands give a better signal.", "facts": null}, "body_temp": {"que_es": "Your body temperature.", "espacio": "An early signal of infection or immune response, which spaceflight can alter. Note: the limit depends on where the sensor measures (core temp ~= oral + 0.47 C). HRP hazard: hostile closed environment.", "como_medir": "With the thermometer at the usual site (oral/armpit/forehead). Always use the same site so readings are comparable.", "facts": null}, "glucose": {"que_es": "Your blood sugar level.", "espacio": "Reflects your nutrition and metabolism, which matter on long missions with controlled diet and activity. HRP hazard: hostile closed environment / nutrition.", "como_medir": "With the glucometer, ideally fasting or at the same time relative to meals so readings are comparable.", "facts": null}, "sleep_hours": {"que_es": "How many hours you slept.", "espacio": "Confinement and irregular schedules hurt sleep, and short sleep degrades mood and cognition. HRP hazards: isolation and confinement (sleep loss).", "como_medir": "Log the real hours of sleep from last night (the sensor's estimate or your own).", "facts": "On the ISS 8.5 h are scheduled, but astronauts sleep about 6.5 +/- 1.4 h (Jones 2022); the scheduled 8.5 h happened only ~5.9% of nights. Seven nights of 6 h is roughly like 24-36 h awake. Healthy reference: >= 7 h (AASM/SRS 2015). A sleep alert should follow a pattern, not one reading: <= 6 h for three nights in a row, or a single night under 5 h."}, "mood": {"que_es": "How you feel emotionally, on a 1 (very bad) to 5 (very good) scale.", "espacio": "Prolonged isolation can bring behavioral changes; logging it helps catch them early. HRP hazard: isolation and confinement (behavioral health).", "como_medir": "Rate yourself 1-5 for your overall mood today. Be honest: it's for you.", "facts": "The daily 1-5 emoji is a quick check. Well-being is screened with the WHO-5 every 14 days (0-100: <= 50 = low well-being, <= 28 = possible depression; Topp 2015). Ask me about the WHO-5 if you want details."}}, "BEHAVIORAL": {"kss": "**Karolinska Sleepiness Scale (KSS)** — a 1-9 self-rating of how sleepy you feel right now (Akerstedt 2014). Rough reading: green 1-5, yellow 6-7, red 8-9. If it's >= 7 before a critical task, consider a vigilance check (PVT-B) or a short rest.", "who5": "**WHO-5 Well-Being Index** — 5 questions about the last 2 weeks, scored 0-100 (Topp 2015). Guide: > 50 fine, 29-50 low well-being (worth watching), <= 28 possible depression (escalate). A 10-point drop from your own baseline is meaningful. Taken every 14 days, matching NASA's private psychological conferences (PPC). It's a screen, not a diagnosis.", "team": "**Team climate** — a quick daily read of the mood with the crew and with ground control. It matters because on long missions tension can shift toward mission control (Kanas); a relationship with ground that turns negative is itself a warning sign. (The exact threshold here is a design choice, not a sourced cutoff.)"}, "HAZARDS": {"radiation": "Space radiation: one of the most serious risks; it can damage cells and DNA. It isn't captured by a simple cabin indicator, so in this app it's an acknowledged limitation (it would need a dosimeter).", "isolation": "Isolation and confinement: small groups in tight quarters for months can show mood and sleep changes. We reflect it with mood and sleep hours.", "distance": "Distance from Earth: medical help can take up to ~20 min one-way, so you must be able to self-assess and act without waiting for the ground. That's why this app works offline.", "gravity": "Altered gravity: the body readapts (heart, muscles, bones, inner ear). We reflect it with heart rate and blood pressure.", "environment": "Hostile closed environment: the vehicle controls air, pressure, temperature and microbes. We reflect it with SpO2 and body temperature."}, "STATUS_EN": {"normal": "green (normal)", "attention": "yellow (attention)", "critical": "red (critical)"}, "RECOMMENDATIONS_EN": {"heart_rate": {"attention": "Rest and measure again in 30 min. Avoid intense exercise.", "critical": "Report to the flight surgeon. Stay at rest and watch your symptoms."}, "systolic_bp": {"attention": "Hydrate and avoid sudden posture changes.", "critical": "Report to the flight surgeon right away."}, "spo2": {"attention": "Check the cabin air quality. Repeat the measurement.", "critical": "Immediate alert — possible oxygenation or environment problem."}, "body_temp": {"attention": "Monitor every few hours. Hydrate.", "critical": "Possible infection or immune response — contact the flight surgeon."}, "glucose": {"attention": "Adjust your next meal/snack. Measure again in 1-2 h.", "critical": "Address it now per your personal medical protocol."}, "sleep_hours": {"attention": "Prioritize sleep hygiene tonight: earlier bedtime, dim light, less caffeine.", "critical": "Short sleep risks cognition/mood. If it's <5 h or 3 nights in a row, flag it; avoid critical tasks or EVA if you can."}, "mood": {"attention": "Use behavioral support: exercise, family contact, downtime. Worth a note for the next PPC.", "critical": "Reach out to mission behavioral health (BHP). If you have any thought of self-harm, escalate immediately."}}, "ESCALATION": "**What you can handle yourself:** sleep hygiene, earlier bedtime, light exposure, exercise, family contact, short naps.\n**Note for the next PPC (persistent yellow):** any indicator yellow 3+ days; WHO-5 between 29 and 50 or a >= 10-point drop; conflict high for 3+ days.\n**Tell the flight surgeon / BHP now (red):** WHO-5 <= 28; sleep <= 6 h for 3 nights or under 5 h before an EVA or critical task; KSS 8-9 before a critical task.\n**Any thought of self-harm: escalate immediately.**", "GAMIFICATION": "The golden rule: points are earned for **logging consistently and honestly, never for \"good\" values** (rewarding good numbers pushes people to fake answers or under-report). Mechanics that fit:\n- **Logbook streak** that *pauses* (doesn't reset) when you miss a day.\n- **\"Honest Report\" badge**: earned when you log a yellow/red and complete the suggested action.\n- **Cooperative crew challenge**: the crew logs and adds exercise minutes together, no individual rankings.\n- **\"Circadian window\"**: go to bed within +/- 30 min of your target time.", "HONESTY_NOTE": "A couple of honesty notes for the pitch: \"CONNECT\" is a popular acronym, not an official HRP strategy (the real countermeasures are NASA's Behavioral Health & Performance ones). And the numeric cutoffs come from general or lab populations, not from astronauts, so they're approximations, not validated space criteria.", "QUICK_QUESTIONS": ["How am I doing?", "What should I do if something is red?", "What is SpO2?", "How do I measure blood pressure?", "What are the 5 hazards?", "How do I log a measurement?"], "INDICATOR_SYNONYMS": {"heart_rate": ["heart rate", "heart", "pulse", "bpm", "frecuencia cardiaca", "ritmo cardiaco", "pulso", "latidos", "corazon", "fc"], "systolic_bp": ["blood pressure", "systolic", "pressure", "mmhg", "presion", "sistolica", "tension"], "spo2": ["spo2", "oxygen", "oxygenation", "saturation", "o2", "oxigeno", "oxigenacion", "saturacion"], "body_temp": ["temperature", "fever", "thermometer", "temp", "temperatura", "fiebre", "termometro"], "glucose": ["glucose", "sugar", "blood sugar", "glucosa", "azucar", "glucemia", "mg/dl"], "sleep_hours": ["sleep", "sleeping", "slept", "rest", "sueno", "dormir", "dormi", "descanso"], "mood": ["mood", "feeling", "emotional", "animo", "estado de animo", "humor", "me siento"]}, "HAZARD_SYNONYMS": {"radiation": ["radiation", "radiacion"], "isolation": ["isolation", "confinement", "loneliness", "aislamiento", "confinamiento", "soledad"], "distance": ["distance", "delay", "earth", "20 min", "distancia", "retraso", "tierra"], "gravity": ["gravity", "microgravity", "weightless", "gravedad", "microgravedad", "ingravidez"], "environment": ["environment", "cabin", "air", "closed", "ambiente", "cabina", "aire", "cerrado"]}, "BEHAVIORAL_SYNONYMS": {"kss": ["kss", "karolinska", "sleepiness", "somnolencia", "drowsy"], "who5": ["who-5", "who5", "well-being", "wellbeing", "bienestar", "depression", "depresion"], "team": ["team", "crew", "conflict", "ground control", "mission control", "equipo", "tripulacion", "conflicto"]}, "RANGES": {"heart_rate": {"unit": "bpm", "normal": [60, 100]}, "systolic_bp": {"unit": "mmHg", "normal": [90, 120]}, "spo2": {"unit": "%", "normal": [95, 100]}, "body_temp": {"unit": "°C", "normal": [36.1, 37.2]}, "glucose": {"unit": "mg/dL", "normal": [70, 140]}, "sleep_hours": {"unit": "h", "normal": [7, 9]}, "mood": {"unit": "1-5", "normal": [4, 5]}}};
+const ChatLocal = (() => {
+  const K = CHATKB;
+  const norm = (t) => t.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const has = (text, ...words) => words.some(w => text.includes(w));
+  const detect = (map, text) => Object.keys(map).find(k => map[k].some(s => text.includes(s))) || null;
+  const anyHazard = (text) => Object.values(K.HAZARD_SYNONYMS).some(syns => syns.some(s => text.includes(s)));
+  const rec = (field, status) => status === "normal" ? null : ((K.RECOMMENDATIONS_EN[field] || {})[status] || null);
+
+  // mismo resultado que context_from_client en chatbot.py
+  function build(c) {
+    if (!c || !c.indicators.length) return { has_data: false, alerts: [] };
+    const assessment = {}, alerts = [];
+    for (const ind of c.indicators) {
+      const label = ind.label || K.LABELS[ind.indicator] || ind.indicator;
+      const unit = ind.unit || (K.RANGES[ind.indicator] || {}).unit || "";
+      const a = { value: ind.value, status: ind.status, recommendation: rec(ind.indicator, ind.status), label, unit };
+      assessment[ind.indicator] = a;
+      if (ind.status !== "normal") alerts.push({ indicator: ind.indicator, label, value: ind.value, unit, status: ind.status });
+    }
+    alerts.sort((x, y) => (x.status === "critical" ? 0 : 1) - (y.status === "critical" ? 0 : 1));
+    return { has_data: true, age_text: c.when || "current reading", assessment, alerts };
+  }
+  function summary(ctx) {
+    if (!ctx.has_data) return "No health records yet for this astronaut.";
+    const lines = [`Last measurement: ${ctx.age_text}.`, "Colors come from your personal-baseline traffic light, not from fixed thresholds."];
+    for (const a of Object.values(ctx.assessment)) lines.push(`- ${a.label}: ${a.value} ${a.unit} -> ${K.STATUS_EN[a.status]}`);
+    return lines.join("\n");
+  }
+  function indicatorAnswer(field, ctx) {
+    const info = K.INDICATORS[field], r = K.RANGES[field];
+    const parts = [`**${K.LABELS[field]}** — ${info.que_es}`, `Why it matters in space: ${info.espacio}`, `How to measure it: ${info.como_medir}`,
+      `Reference normal range: ${r.normal[0]}-${r.normal[1]} ${r.unit}.`];
+    if (info.facts) parts.push(info.facts);
+    const a = ctx.has_data && ctx.assessment[field];
+    if (a) {
+      parts.push(`Your latest reading: ${a.value} ${r.unit} -> ${K.STATUS_EN[a.status]}.`);
+      if (a.recommendation) parts.push(`Suggestion: ${a.recommendation}`);
+    }
+    return parts.join("\n");
+  }
+  function actionAnswer(ctx, field) {
+    if (!ctx.has_data) return "Log a measurement first and I'll tell you what to do based on your traffic light.\nIn general: if something is yellow, repeat the measurement and keep "
+      + "watching; if it's red or it persists, report it to the mission's medical officer.\n\n" + K.ESCALATION;
+    const targets = field ? [field] : ctx.alerts.map(a => a.indicator);
+    if (!targets.length) return "Right now every indicator with data is green. Keep up your routine 👍";
+    const lines = [];
+    for (const f of targets) {
+      const a = ctx.assessment[f];
+      if (!a) continue;
+      lines.push(a.status === "normal" ? `**${a.label}** is green, no action needed.`
+        : `**${a.label}** is ${K.STATUS_EN[a.status]}: ${a.recommendation || "Repeat the measurement and watch how it evolves."}`);
+    }
+    lines.push("", K.ESCALATION);
+    return lines.join("\n");
+  }
+  function statusAnswer(ctx) {
+    if (!ctx.has_data) return "You have no records yet. Enter at least one indicator and I'll assess your state.";
+    const head = ctx.alerts.length ? `You have ${ctx.alerts.length} indicator(s) outside green. Check:` : "Everything you logged is green ✅. Nice work.";
+    return `${head}\n${summary(ctx)}`;
+  }
+  function hazardsAnswer(text) {
+    const k = detect(K.HAZARD_SYNONYMS, text);
+    if (k) return K.HAZARDS[k];
+    return "The 5 hazards of spaceflight per NASA's Human Research Program (NASA calls them RIDGE):\n"
+      + ["radiation", "isolation", "distance", "gravity", "environment"].map(h => `• ${K.HAZARDS[h]}`).join("\n");
+  }
+  // esta respuesta describe esta página (el chequeo), no la app de React
+  function appHelp(text) {
+    if (has(text, "traffic light", "color", "green", "yellow", "red", "semaforo", "verde", "amarillo", "rojo"))
+      return "The traffic light sums up your state at a glance: **green** = within your personal band, **yellow** = attention (repeat and watch), "
+        + "**red** = act and report. Each zone of the body figure is colored by its indicators.";
+    return "To log: press **Do my check-in**, type what you measured and press **Evaluate my check-in**. You don't need to fill everything; one value is enough. "
+      + "Each value is compared with your own band and with the clinical limits, and you get the first steps to take.";
+  }
+  function gamification(ctx) {
+    if (!ctx.has_data) return "Start your streak! Logging your indicators every day is the best health routine on a mission. Make your first measurement 🚀\n\n" + K.GAMIFICATION;
+    if (ctx.alerts.length) return "Today is a self-care day: you have indicators outside green. Follow the suggestion and measure again — getting back to green counts as a win 💪 "
+      + "(that's exactly the \"Honest Report\" idea).\n\n" + K.GAMIFICATION;
+    return "Going well! Everything you have on screen is green ✅. Keep the routine: measuring at the same time each day makes your trends more useful.\n\n" + K.GAMIFICATION;
+  }
+  function reply(message, ctx) {
+    const text = norm(message);
+    if (has(text, "hurt myself", "kill myself", "self-harm", "self harm", "suicid", "end my life", "hacerme dano", "lastimarme", "quitarme la vida"))
+      return "I'm really glad you told me. This is above what this app handles: please contact the flight surgeon or Behavioral Health & Performance (BHP) right "
+        + "now — any thought of self-harm is an immediate escalation. You don't have to deal with this alone.";
+    if (has(text, "hello", "hi", "hey", "hola", "buenas") && text.length <= 15) {
+      let head = "Hi! I'm your on-board health assistant.";
+      if (ctx.has_data && ctx.alerts.length) head += ` Heads up: you have ${ctx.alerts.length} indicator(s) outside green.`;
+      return `${head} I can explain indicators and risks, tell you how you're doing, guide you if something is out of range, and help you use the app. What do you need?`;
+    }
+    if (has(text, "connect", "honest", "pitch", "validated", "source", "fuente", "validado")) return K.HONESTY_NOTE;
+    const indicator = detect(K.INDICATOR_SYNONYMS, text);
+    const behavioral = detect(K.BEHAVIORAL_SYNONYMS, text);
+    if (behavioral && !indicator) return K.BEHAVIORAL[behavioral];
+    if ((has(text, "hazard", "hazards", "risk", "peligro", "peligros", "riesgo") || anyHazard(text)) && !indicator) return hazardsAnswer(text);
+    if (has(text, "what should i do", "what do i do", "action", "recommend", "out of range", "is red", "is yellow", "feel bad", "que hago", "que debo", "accion", "recomendacion"))
+      return actionAnswer(ctx, indicator);
+    if (has(text, "escalate", "report", "flight surgeon", "when do i", "escalar", "reportar")) return K.ESCALATION;
+    if (has(text, "how am i", "my state", "my status", "summary", "how am i doing", "como estoy", "mi estado", "resumen")) return statusAnswer(ctx);
+    if (indicator && has(text, "how do i measure", "how to measure", "measure", "take a reading", "como mido", "como medir", "medir"))
+      return K.INDICATORS[indicator].como_medir + `\n\n(${K.DISCLAIMER})`;
+    if (indicator) return indicatorAnswer(indicator, ctx);
+    if (has(text, "register", "log", "how do i use", "how does it work", "traffic light", "chart", "app", "help", "registrar", "registro", "semaforo", "ayuda")) return appHelp(text);
+    if (has(text, "streak", "points", "badge", "challenge", "reminder", "motivate", "game", "gamif", "racha", "puntos", "logro", "reto", "recordatorio")) return gamification(ctx);
+    return "I can help you with:\n• Explaining an indicator (e.g. \"What is SpO2?\") and how to measure it.\n• Telling you how you're doing and what to do if something is out of range.\n"
+      + "• The 5 hazards of spaceflight, and behavioral checks (sleep, KSS, WHO-5, team).\n• How to use the app and read the traffic light.\nWhich one would you like to start with?";
+  }
+  return {
+    // mismas respuestas que POST /chat/status y POST /chat
+    status(c) {
+      const ctx = build(c);
+      const greeting = !ctx.has_data ? "Hi! I'm your health assistant. You haven't logged any measurements yet — enter your indicators and I'll help you read them."
+        : ctx.alerts.length ? `Heads up: ${ctx.alerts.length} indicator(s) outside green (${ctx.age_text}). Ask me "what should I do?".`
+        : `All green ✅ (${ctx.age_text}). How can I help?`;
+      return { greeting, quick_questions: K.QUICK_QUESTIONS, disclaimer: K.DISCLAIMER, llm_available: false, local: true };
+    },
+    chat(message, c) { return { reply: reply(message, build(c)), source: "rules", local: true }; },
+  };
+})();
+
 // ---------- asistente de salud (chatbot de Jarib) ----------
 // La ventana habla con backend/chatbot.py (POST /chat). El asistente responde en inglés, como lo dejó Jarib.
 // La página le manda el estado que ya está en pantalla (valores y colores del semáforo de línea base), así el
-// asistente no recalcula nada con umbrales fijos. Sin el servidor del equipo no hay asistente: el botón no aparece.
+// asistente no recalcula nada con umbrales fijos. Sin el servidor del equipo (o si no contesta) responde ChatLocal, dentro de la página.
 const Chat = (() => {
   const q = new URLSearchParams(location.search).get("api");
   const API = (q || (location.protocol === "http:" ? location.origin : "")).replace(/\/$/, "");
   const api = { update() {} };
-  if (!API) return api;
   // nombre del indicador en el chatbot, etiqueta en inglés y unidad
   const MAP = { hr_rest: ["heart_rate", "Resting heart rate", "bpm"], bp_sys: ["systolic_bp", "Systolic blood pressure", "mmHg"],
     bp_dia: ["diastolic_bp", "Diastolic blood pressure", "mmHg"], spo2: ["spo2", "SpO2 (oxygen saturation)", "%"], temp: ["body_temp", "Body temperature", "°C"],
@@ -1764,6 +1888,8 @@ const Chat = (() => {
 
   const post = (path, body) => fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  // con servidor se le pregunta a él (puede sumar la capa de IA); sin servidor, o si falla, responde la propia página
+  const ask = (path, body, local) => API ? post(path, body).catch(local) : Promise.resolve().then(local);
   const rich = (t) => esc(t).split("\n").map(l => `<p>${l.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")}</p>`).join("");
   function paint() {
     log.innerHTML = msgs.map(m => `<div class="chat-msg${m.role === "user" ? " me" : ""}">${rich(m.content)}${m.source === "llm" ? '<span class="chat-src">written with AI</span>' : ""}</div>`).join("")
@@ -1774,21 +1900,20 @@ const Chat = (() => {
   function greet() {
     if (greeted || !ctx) return;
     greeted = true;
-    post("/chat/status", { context: ctx }).then(s => {
-      $("#chatMode").textContent = s.llm_available ? "AI + offline" : "offline";
+    ask("/chat/status", { context: ctx }, () => ChatLocal.status(ctx)).then(s => {
+      $("#chatMode").textContent = s.llm_available ? "AI + offline" : s.local ? "on this page" : "offline";
       $("#chatNote").textContent = s.disclaimer + (s.llm_available ? " Some answers are written with AI." : "");
       $("#chatQuick").innerHTML = (s.quick_questions || []).filter(t => !/log a measurement/i.test(t)).map(t => `<button type="button">${esc(t)}</button>`).join("");
       say("assistant", s.greeting, "rules");
-    }).catch(() => { greeted = false; say("assistant", "I can't reach the assistant's server right now. Check that the team backend is running and try again.", "rules"); });
+    });
   }
   function send(text) {
     const content = text.trim();
     if (!content || sending || !ctx) return;
     const history = msgs.map(m => ({ role: m.role, content: m.content }));
     say("user", content); input.value = ""; hint(); sending = true; paint();
-    post("/chat", { message: content, history, context: ctx })
-      .then(d => { sending = false; say("assistant", d.reply, d.source); })
-      .catch(() => { sending = false; say("assistant", "I couldn't get an answer. The assistant needs the team backend running; your data on screen is not affected.", "rules"); });
+    ask("/chat", { message: content, history, context: ctx }, () => ChatLocal.chat(content, ctx))
+      .then(d => { sending = false; say("assistant", d.reply, d.source); });
   }
   // autocompletar en gris: Tab o flecha derecha lo acepta
   function hint() {
