@@ -10,10 +10,10 @@ interface BodyPart {
 }
 
 const BODY_PARTS: BodyPart[] = [
-  { id: "head", label: "Cabeza / Mente", indicators: ["mood", "sleep_hours"], cx: 100, cy: 40, r: 18 },
-  { id: "chest", label: "Pecho / Cardiovascular", indicators: ["heart_rate", "systolic_bp", "spo2"], cx: 100, cy: 100, r: 28 },
-  { id: "abdomen", label: "Abdomen / Metabolismo", indicators: ["glucose"], cx: 100, cy: 160, r: 22 },
-  { id: "core", label: "Temperatura corporal", indicators: ["body_temp"], cx: 100, cy: 200, r: 16 },
+  { id: "head", label: "Head / Mind", indicators: ["mood", "sleep_hours"], cx: 100, cy: 40, r: 18 },
+  { id: "chest", label: "Chest / Cardiovascular", indicators: ["heart_rate", "systolic_bp", "spo2"], cx: 100, cy: 100, r: 28 },
+  { id: "abdomen", label: "Abdomen / Metabolism", indicators: ["glucose"], cx: 100, cy: 160, r: 22 },
+  { id: "core", label: "Body temperature", indicators: ["body_temp"], cx: 100, cy: 200, r: 16 },
 ];
 
 export default function BodyMap({

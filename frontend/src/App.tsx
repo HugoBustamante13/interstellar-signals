@@ -21,12 +21,12 @@ export default function App() {
   async function loadRecords() {
     try {
       const res = await fetch("/api/records");
-      if (!res.ok) throw new Error("API no disponible");
+      if (!res.ok) throw new Error("API unavailable");
       setRecords(await res.json());
       setApiError(null);
     } catch (e) {
       setApiError(
-        "No se pudo conectar al backend (¿está corriendo `uvicorn main:app --reload` en /backend?). Trabajando solo en modo local."
+        "Could not connect to the backend (is `uvicorn main:app --reload` running in /backend?). Working in local mode only."
       );
     }
   }
@@ -45,7 +45,7 @@ export default function App() {
       INDICATOR_KEYS.filter((k) => form[k] !== null).map((k) => [k, form[k]])
     );
     if (Object.keys(payload).length === 0) {
-      setRecommendations(["Ingresa al menos un indicador antes de registrar."]);
+      setRecommendations(["Enter at least one indicator before saving."]);
       return;
     }
     try {
@@ -64,7 +64,7 @@ export default function App() {
     } catch {
       // Modo sin backend: solo evaluamos localmente
       const recs = INDICATOR_KEYS.filter((k) => form[k] !== null && statusByIndicator[k] !== "normal")
-        .map((k) => `${THRESHOLDS[k].label}: fuera de rango, considera reposo y volver a medir.`);
+        .map((k) => `${THRESHOLDS[k].label}: out of range, consider resting and measuring again.`);
       setRecommendations(recs);
     }
   }
@@ -74,7 +74,7 @@ export default function App() {
       <header className="mb-6">
         <h1 className="text-2xl font-bold">🚀 Astronaut Health Monitor</h1>
         <p className="text-slate-400 text-sm">
-          Registra tus indicadores de salud y evalúa tu estado a simple vista.
+          Log your health indicators and check your status at a glance.
         </p>
         {apiError && (
           <p className="text-amber-400 text-xs mt-2">{apiError}</p>
@@ -92,14 +92,14 @@ export default function App() {
             <div className="mt-4 text-sm bg-slate-900 rounded-lg p-3">
               <p className="font-medium">{selectedPart.label}</p>
               <p className="text-slate-400">
-                Indicadores: {selectedPart.indicators.map((i) => THRESHOLDS[i].label).join(", ")}
+                Indicators:{selectedPart.indicators.map((i) => THRESHOLDS[i].label).join(", ")}
               </p>
             </div>
           )}
           <div className="mt-4 text-xs text-slate-500 space-y-1">
             <p><span className="inline-block w-3 h-3 rounded-full bg-[#22c55e] mr-1" /> Normal</p>
-            <p><span className="inline-block w-3 h-3 rounded-full bg-[#f59e0b] mr-1" /> Atención</p>
-            <p><span className="inline-block w-3 h-3 rounded-full bg-[#ef4444] mr-1" /> Crítico</p>
+            <p><span className="inline-block w-3 h-3 rounded-full bg-[#f59e0b] mr-1" /> Attention</p>
+            <p><span className="inline-block w-3 h-3 rounded-full bg-[#ef4444] mr-1" /> Critical</p>
           </div>
         </div>
 
@@ -119,12 +119,12 @@ export default function App() {
             onClick={handleSubmit}
             className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg font-medium"
           >
-            Registrar medición
+            Save reading
           </button>
 
           {recommendations.length > 0 && (
             <div className="mt-4 bg-slate-900 border border-amber-500 rounded-lg p-3 space-y-1">
-              <p className="font-medium text-amber-400">Recomendaciones</p>
+              <p className="font-medium text-amber-400">Recommendations</p>
               {recommendations.map((r, i) => (
                 <p key={i} className="text-sm text-slate-300">• {r}</p>
               ))}

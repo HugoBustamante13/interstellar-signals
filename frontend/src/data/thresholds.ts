@@ -9,13 +9,13 @@ export interface IndicatorRule {
 }
 
 export const THRESHOLDS: Record<string, IndicatorRule> = {
-  heart_rate: { label: "Frecuencia cardíaca", unit: "bpm", normal: [60, 100], attention: [50, 120] },
-  systolic_bp: { label: "Presión sistólica", unit: "mmHg", normal: [90, 120], attention: [85, 140] },
-  spo2: { label: "SpO2", unit: "%", normal: [95, 100], attention: [90, 100] },
-  body_temp: { label: "Temperatura corporal", unit: "°C", normal: [36.1, 37.2], attention: [35.5, 38.0] },
-  glucose: { label: "Glucosa", unit: "mg/dL", normal: [70, 140], attention: [60, 180] },
-  sleep_hours: { label: "Horas de sueño", unit: "h", normal: [7, 9], attention: [5, 12] },
-  mood: { label: "Estado de ánimo", unit: "1-5", normal: [4, 5], attention: [2, 5] },
+  heart_rate: { label: "Heart rate", unit: "bpm", normal: [60, 100], attention: [50, 120] },
+  systolic_bp: { label: "Systolic blood pressure", unit: "mmHg", normal: [90, 120], attention: [85, 140] },
+  spo2: { label: "Oxygen saturation (SpO2)", unit: "%", normal: [95, 100], attention: [90, 100] },
+  body_temp: { label: "Body temperature", unit: "°C", normal: [36.1, 37.2], attention: [35.5, 38.0] },
+  glucose: { label: "Glucose", unit: "mg/dL", normal: [70, 140], attention: [60, 180] },
+  sleep_hours: { label: "Sleep hours", unit: "h", normal: [7, 9], attention: [5, 12] },
+  mood: { label: "Mood", unit: "1-5", normal: [4, 5], attention: [2, 5] },
 };
 
 export function evaluate(indicator: string, value: number): Status {

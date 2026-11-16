@@ -1,26 +1,26 @@
 # Astronaut Health Monitor — NASA Space Apps Challenge
 
-Herramienta visual para que astronautas registren indicadores de salud, vean su
-estado por código de colores sobre un mapa corporal, revisen tendencias en el
-tiempo y reciban recomendaciones cuando algo se sale de rango.
+A visual tool for astronauts to log health indicators, see their status as a
+traffic light (green/yellow/red) on a body map, review trends over time and get
+guidance on next steps when something goes out of range.
 
-## Estructura
+## Structure
 
 ```
 nasa-space-apps/
-├── .claude/agents/        # Subagentes con modelo asignado (ver CLAUDE.md)
-├── CLAUDE.md              # Contexto completo del proyecto (equipo, decisiones, pendientes)
+├── .claude/agents/        # Subagents with an assigned model (see CLAUDE.md)
+├── CLAUDE.md              # Full project context (team, decisions, open items)
 ├── backend/               # FastAPI + SQLite
 ├── frontend/              # React + TS + Vite + Tailwind + Recharts
-├── simulador/             # Datos sintéticos + semáforo con línea base personal (v0.3)
+├── simulador/             # Synthetic data + traffic light with personal baseline (v0.3)
 │   ├── sim/  out/  schema/  fichas/  charts/
 │   └── RESULTADOS_investigacion.md
 └── docs/
     ├── health_indicators.md
-    └── equipo/            # Guía del reto, respaldo de indicadores, entrega de datos (.docx)
+    └── equipo/            # Challenge guide, indicator sources, data delivery (.docx, in Spanish)
 ```
 
-## Cómo correrlo
+## How to run it
 
 ### Backend
 ```bash
@@ -29,7 +29,7 @@ python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activa
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
-Queda en `http://localhost:8000`.
+It runs at `http://localhost:8000`.
 
 ### Frontend
 ```bash
@@ -37,30 +37,30 @@ cd frontend
 npm install
 npm run dev
 ```
-Queda en `http://localhost:5173` y proxyea `/api` hacia el backend.
+It runs at `http://localhost:5173` and proxies `/api` to the backend.
 
-### Simulador
+### Simulator
 ```bash
 cd simulador
 pip install numpy pandas scipy matplotlib jsonschema
-python sim/simulator.py --out out_prueba     # genera datos + semáforo (~1 s)
+python sim/simulator.py --out out_prueba     # generates data + traffic light (~1 s)
 python schema/validate.py out/mission_synthetic.json
 ```
-Ver `docs/equipo/Entrega_parte_de_datos.docx` para el detalle. Todos los datos son sintéticos.
+See `docs/equipo/Entrega_parte_de_datos.docx` for details. All data is synthetic.
 
-### Prototipo web (demo)
-Abre `prototipo/index.html` en el navegador. Para modificarlo edita
-`prototipo/template.html` y ejecuta `python prototipo/build.py`
-(ver `prototipo/README.md`).
+### Web prototype (demo)
+Open `prototipo/index.html` in your browser. To change it, edit
+`prototipo/template.html` and run `python prototipo/build.py`
+(see `prototipo/README.md`).
 
-Si el backend no está corriendo, el frontend funciona igual en modo local
-(evalúa los indicadores en el navegador, sin guardar histórico).
+If the backend is not running, the frontend still works in local mode
+(it evaluates the indicators in the browser, without saving history).
 
-## Próximos pasos sugeridos
-1. Refinar los umbrales de `docs/health_indicators.md` con fuentes reales de
-   NASA HRP (delegar al agente `investigador`).
-2. Agregar autenticación simple / selección de astronauta si hay más de un usuario.
-3. Agregar gamificación (rachas de mediciones, logros) — mencionado como
-   feature opcional del challenge.
-4. Mejorar el mapa corporal con una silueta real en vez de círculos (SVG).
-5. Agregar explicaciones educativas por indicador ("por qué se mide esto en el espacio").
+## Suggested next steps
+1. Refine the thresholds in `docs/health_indicators.md` with real NASA HRP
+   sources (delegate to the `investigador` agent).
+2. Add simple authentication / astronaut selection if there is more than one user.
+3. Add gamification (measurement streaks, achievements) — mentioned as an
+   optional feature of the challenge.
+4. Improve the body map with a real silhouette (SVG) instead of circles.
+5. Add educational explanations per indicator ("why this is measured in space").
