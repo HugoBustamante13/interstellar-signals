@@ -27,9 +27,15 @@ nasa-space-apps/
 cd backend
 python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+python seed_demo.py          # carga la misión sintética (4 astronautas; el día 180 es hoy)
 uvicorn main:app --reload
 ```
-Queda en `http://localhost:8000`.
+Queda en `http://localhost:8000`. El color lo calcula el semáforo del simulador (`semaforo_bridge.py` importa
+`simulador/sim/semaforo.py`): cada astronauta se compara con su propia línea base. Endpoints: `/indicators`,
+`/astronauts`, `/records`, `/status`, `/series`. Contrato en `docs/decision_integracion_semaforo.md`, sección 5.
+
+Pruebas: `pip install -r requirements-dev.txt && python -m pytest -q`. Si al arrancar dice «esquema viejo»,
+borra `backend/health_records.db` (solo tenía datos de prueba) y vuelve a correr `seed_demo.py`.
 
 ### Frontend
 ```bash
@@ -53,8 +59,8 @@ Abre `prototipo/index.html` en el navegador. Para modificarlo edita
 `prototipo/template.html` y ejecuta `python prototipo/build.py`
 (ver `prototipo/README.md`).
 
-Si el backend no está corriendo, el frontend funciona igual en modo local
-(evalúa los indicadores en el navegador, sin guardar histórico).
+Si el backend no está corriendo, el frontend en React funciona en modo local: solo límites
+clínicos, sin línea base personal ni histórico.
 
 ## Próximos pasos sugeridos
 1. Refinar los umbrales de `docs/health_indicators.md` con fuentes reales de

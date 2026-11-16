@@ -1,44 +1,57 @@
 """
-Fuente de verdad de los rangos de los indicadores de salud.
-Ver docs/health_indicators.md para la justificación clínica/espacial.
+Metadatos de los indicadores: etiqueta, unidad, rango de entrada, parte del cuerpo y recomendaciones.
 
-Mantener sincronizado con frontend/src/data/thresholds.ts
+Desde la decisión del 14-nov-2026 (docs/decision_integracion_semaforo.md) este archivo NO decide colores.
+El color lo da el semáforo del simulador (semaforo_bridge.py), con la línea base personal y los límites
+absolutos de simulador/sim/semaforo_config.json. Aquí no se copian límites: /indicators los lee de la config.
+
+Nombres canónicos = claves del simulador (hr_rest, bp_sys, ...). El frontend tiene el espejo en
+frontend/src/data/indicators.ts y lo sobrescribe al arrancar con GET /indicators.
 """
 from enum import Enum
 
 
 class Status(str, Enum):
-    NORMAL = "normal"
-    ATTENTION = "attention"
-    CRITICAL = "critical"
+    NORMAL = "normal"  # verde
+    ATTENTION = "attention"  # amarillo
+    CRITICAL = "critical"  # rojo
 
 
-# Cada regla: (min_normal, max_normal, min_attention, max_attention)
-# Fuera de attention => critical
-THRESHOLDS = {
-    "heart_rate": {"unit": "bpm", "normal": (60, 100), "attention": (50, 120)},
-    "systolic_bp": {"unit": "mmHg", "normal": (90, 120), "attention": (85, 140)},
-    "spo2": {"unit": "%", "normal": (95, 100), "attention": (90, 100)},
-    "body_temp": {"unit": "°C", "normal": (36.1, 37.2), "attention": (35.5, 38.0)},
-    "glucose": {"unit": "mg/dL", "normal": (70, 140), "attention": (60, 180)},
-    "sleep_hours": {"unit": "h", "normal": (7, 9), "attention": (5, 12)},
-    "mood": {"unit": "1-5", "normal": (4, 5), "attention": (2, 5)},
+STATUS_BY_CODE = {0: Status.NORMAL, 1: Status.ATTENTION, 2: Status.CRITICAL}
+
+# input_range: valores plausibles para validar la entrada (422 si se sale). NO son umbrales de alerta.
+INDICATORS = {
+    "hr_rest": {"label": "FC en reposo", "unit": "lpm", "input_range": (20, 250), "body_part": "chest", "in_semaforo": True},
+    "bp_sys": {"label": "Presión sistólica", "unit": "mmHg", "input_range": (50, 260), "body_part": "chest", "in_semaforo": True},
+    "bp_dia": {"label": "Presión diastólica", "unit": "mmHg", "input_range": (30, 160), "body_part": "chest", "in_semaforo": True},
+    "spo2": {"label": "SpO2", "unit": "%", "input_range": (50, 100), "body_part": "chest", "in_semaforo": True},
+    "temp": {"label": "Temperatura", "unit": "°C", "input_range": (30, 45), "body_part": "core", "in_semaforo": True},
+    "glucose": {"label": "Glucosa en ayunas", "unit": "mg/dL", "input_range": (20, 600), "body_part": "abdomen", "in_semaforo": False},
+    "sleep": {"label": "Horas de sueño", "unit": "h", "input_range": (0, 24), "body_part": "head", "in_semaforo": True},
+    "mood": {"label": "Estado de ánimo", "unit": "1-5", "input_range": (1, 5), "body_part": "head", "in_semaforo": True},
+    "exercise": {"label": "Ejercicio", "unit": "min", "input_range": (0, 600), "body_part": "legs", "in_semaforo": True},
+    "fitness": {"label": "Aptitud física", "unit": "% previa", "input_range": (0, 150), "body_part": "legs", "in_semaforo": True},
 }
 
+# attention = amarillo, critical = rojo
 RECOMMENDATIONS = {
-    "heart_rate": {
+    "hr_rest": {
         Status.ATTENTION: "Descansa y vuelve a medir en 30 min. Evita ejercicio intenso.",
         Status.CRITICAL: "Reporta a flight surgeon. Mantente en reposo y monitorea síntomas.",
     },
-    "systolic_bp": {
+    "bp_sys": {
         Status.ATTENTION: "Hidrátate y evita cambios posturales bruscos.",
+        Status.CRITICAL: "Reporta a flight surgeon de inmediato.",
+    },
+    "bp_dia": {
+        Status.ATTENTION: "Hidrátate y repite la medición en reposo.",
         Status.CRITICAL: "Reporta a flight surgeon de inmediato.",
     },
     "spo2": {
         Status.ATTENTION: "Verifica calidad de aire de la cabina. Repite la medición.",
         Status.CRITICAL: "Alerta inmediata — posible problema de oxigenación o del ambiente.",
     },
-    "body_temp": {
+    "temp": {
         Status.ATTENTION: "Monitorea cada pocas horas. Hidrátate.",
         Status.CRITICAL: "Posible infección o respuesta inmune — contacta a flight surgeon.",
     },
@@ -46,7 +59,7 @@ RECOMMENDATIONS = {
         Status.ATTENTION: "Ajusta próxima comida/snack. Vuelve a medir en 1-2 h.",
         Status.CRITICAL: "Atiende de inmediato según protocolo médico personal.",
     },
-    "sleep_hours": {
+    "sleep": {
         Status.ATTENTION: "Prioriza higiene de sueño esta noche. Reduce cafeína.",
         Status.CRITICAL: "Riesgo de deterioro cognitivo/ánimo — ajusta rutina y reporta si persiste.",
     },
@@ -54,21 +67,16 @@ RECOMMENDATIONS = {
         Status.ATTENTION: "Usa recursos de apoyo conductual. Habla con la tripulación.",
         Status.CRITICAL: "Contacta soporte de salud conductual de la misión.",
     },
+    "exercise": {
+        Status.ATTENTION: "Retoma tu plan de ejercicio: es la contramedida contra la pérdida muscular y ósea.",
+    },
+    "fitness": {
+        Status.CRITICAL: "Aptitud bajo 80 % de la previa: revisa el plan de ejercicio con el equipo médico.",
+    },
 }
 
 
-def evaluate(indicator: str, value: float) -> Status:
-    rule = THRESHOLDS[indicator]
-    n_lo, n_hi = rule["normal"]
-    a_lo, a_hi = rule["attention"]
-    if n_lo <= value <= n_hi:
-        return Status.NORMAL
-    if a_lo <= value <= a_hi:
-        return Status.ATTENTION
-    return Status.CRITICAL
-
-
-def get_recommendation(indicator: str, status: Status) -> str | None:
-    if status == Status.NORMAL:
+def get_recommendation(indicator: str, status: Status | None) -> str | None:
+    if status is None or status == Status.NORMAL:
         return None
     return RECOMMENDATIONS.get(indicator, {}).get(status)

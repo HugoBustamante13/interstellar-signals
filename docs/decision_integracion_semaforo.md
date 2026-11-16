@@ -2,6 +2,17 @@
 
 Fecha: 14-nov-2026 · Autor: agente arquitecto · Estado: **decidido** (los puntos abiertos están en la sección 7)
 
+> **Implementado el 15-nov-2026** (rama `andres/semaforo-backend`): pasos 1–13 de la sección 6. El paso 14
+> (`bp_counts_once`) sigue pendiente. Diferencias con el plan, menores:
+> - Motivos en verde: `prevuelo` se evalúa antes que `sin_linea_base` (si no, nunca saldría: en prevuelo
+>   todavía no hay línea base). `aptitud_baja` gana sobre `limite_clinico` para `fitness`.
+> - Ejercicio sin sesiones registradas puede alertar (lo hace el simulador); los demás indicadores sin dato
+>   devuelven `status: null`.
+> - `seed_demo.py` deja el registro sintético de hoy antes de la hora actual, para que una lectura manual
+>   posterior sea siempre la última del día.
+> - Verificación: `backend/test_semaforo_bridge.py` compara todos los días de vuelo de los 4 astronautas con
+>   `simulador/out/mission_synthetic_semaforo.csv`: coinciden en todos los indicadores y en el estado global.
+
 Resumen: el backend **importa** `simulador/sim/semaforo.py` tal como está y lo usa como **única lógica de color**.
 Los rangos fijos normal/atención/crítico de `thresholds.py` **dejan de decidir colores**; solo los límites
 absolutos de `semaforo_config.json` actúan sin línea base. Los nombres canónicos son las claves cortas del
