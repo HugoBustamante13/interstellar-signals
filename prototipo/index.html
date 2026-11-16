@@ -486,6 +486,40 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
   border: 1px dashed var(--accent); background: var(--accent-soft); font-size: 12.5px; border-radius: 10px; }
 .livebar b { font-family: var(--f-data); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--crit); }
 
+/* ---------- asistente de salud (chatbot de Jarib) ---------- */
+.chat-fab { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 34;
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--surface); font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.chat-fab svg { width: 20px; height: 20px; }
+.chat-fab .chat-n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--warn); color: #14100d; font-family: var(--f-data); font-size: 12px; line-height: 20px; text-align: center; }
+.chat-fab .chat-n[data-st="2"] { background: var(--crit); }
+.chat-panel { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 72px)); z-index: 34;
+  width: min(400px, calc(100vw - 32px)); height: min(580px, calc(100dvh - 160px)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .5); }
+.chat-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.chat-head h2 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.2; }
+.chat-head p { margin: 0; font-size: 11.5px; color: var(--muted); }
+.chat-head .chat-mode { margin-left: auto; font-family: var(--f-data); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); white-space: nowrap; }
+.chat-x { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 10px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; line-height: 1; flex: none; }
+.chat-log { overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.chat-msg { max-width: 88%; padding: 9px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.45; background: var(--surface-2); border: 1px solid var(--line); align-self: flex-start; overflow-wrap: anywhere; }
+.chat-msg p { margin: 0 0 4px; } .chat-msg p:last-child { margin: 0; } .chat-msg p:empty { height: 6px; }
+.chat-msg.me { align-self: flex-end; background: var(--accent-soft); border-color: var(--accent); }
+.chat-msg .chat-src { display: block; margin-top: 6px; font-family: var(--f-data); font-size: 10px; letter-spacing: .06em; color: var(--muted); }
+.chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+.chat-quick button { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 999px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+.chat-quick button:hover { border-color: var(--accent); color: var(--accent); }
+.chat-form { border-top: 1px solid var(--line); padding: 10px 14px 12px; display: grid; gap: 6px; }
+.chat-row { display: flex; gap: 8px; }
+.chat-in { position: relative; flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.chat-in input, .chat-in .chat-ghost { font: inherit; font-size: 14px; padding: 9px 12px; width: 100%; box-sizing: border-box; }
+.chat-in input { position: relative; background: transparent; border: 0; color: var(--ink); outline: none; }
+.chat-in:focus-within { border-color: var(--accent); }
+.chat-in .chat-ghost { position: absolute; inset: 0; color: var(--muted); opacity: .6; white-space: pre; overflow: hidden; pointer-events: none; }
+.chat-in .chat-ghost b { font-weight: inherit; visibility: hidden; }
+.chat-form small { font-size: 10.5px; line-height: 1.35; color: var(--muted); }
+@media (max-width: 480px) { .chat-fab span.chat-t { display: none; } .chat-fab { padding: 12px; } }
+
 /* ---------- alarma sonora ---------- */
 .alarmbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 61px); z-index: 35; background: var(--crit); color: #14100d;
   border-bottom: 2px solid #14100d; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
@@ -559,6 +593,27 @@ button.chip:hover { border-color: var(--accent); color: var(--accent); }
     <button class="alarm-stop" id="alarmStop" type="button">Parada<small>ya lo estamos atendiendo</small></button>
   </div>
 </div>
+
+<button class="chat-fab" id="chatFab" type="button" aria-expanded="false" aria-controls="chatPanel" aria-label="Abrir el asistente de salud" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12h4.2l1.8-5 3 10 2.1-6 1.3 1h6.6"/></svg>
+  <span class="chat-t">Asistente</span><span class="chat-n" id="chatN" hidden></span>
+</button>
+<section class="chat-panel" id="chatPanel" aria-label="Asistente de salud" hidden>
+  <header class="chat-head">
+    <div><h2>Asistente de salud</h2><p id="chatWho">Responde en inglés</p></div>
+    <span class="chat-mode" id="chatMode">sin conexión</span>
+    <button class="chat-x" id="chatClose" type="button" aria-label="Cerrar el asistente">×</button>
+  </header>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <div class="chat-quick" id="chatQuick"></div>
+  <form class="chat-form" id="chatForm" autocomplete="off">
+    <div class="chat-row">
+      <div class="chat-in"><div class="chat-ghost" id="chatGhost" aria-hidden="true"></div><input id="chatInput" type="text" maxlength="400" placeholder="Type your question…" aria-label="Pregunta para el asistente (en inglés)"></div>
+      <button class="btn primary" type="submit" id="chatSend">Enviar</button>
+    </div>
+    <small id="chatNote">Usa IA cuando hay conexión. No es consejo médico y los datos de la demo son sintéticos.</small>
+  </form>
+</section>
 
 <div class="scrim" id="scrim" hidden></div>
 <nav class="drawer" id="drawer" aria-label="Secciones">
@@ -1083,6 +1138,7 @@ function render() {
 
   applyLive(a, i, states);
   Alarm.check(a, i, states);
+  Chat.update(a, i, states);
   renderCrewNav(d);
 
   // tripulación
@@ -1672,6 +1728,96 @@ function evaluateCheckin() {
     <div class="guide"><h3>Qué hacer</h3><ol>${steps.map(t => `<li>${t}</li>`).join("")}</ol>
     <p class="note">Orientativa. No reemplaza el criterio del oficial médico.</p></div></div>`;
 }
+
+// ---------- asistente de salud (chatbot de Jarib) ----------
+// La ventana habla con backend/chatbot.py (POST /chat). El asistente responde en inglés, como lo dejó Jarib.
+// La página le manda el estado que ya está en pantalla (valores y colores del semáforo de línea base), así el
+// asistente no recalcula nada con umbrales fijos. Sin el servidor del equipo no hay asistente: el botón no aparece.
+const Chat = (() => {
+  const q = new URLSearchParams(location.search).get("api");
+  const API = (q || (location.protocol === "http:" ? location.origin : "")).replace(/\/$/, "");
+  const api = { update() {} };
+  if (!API) return api;
+  // nombre del indicador en el chatbot, etiqueta en inglés y unidad
+  const MAP = { hr_rest: ["heart_rate", "Resting heart rate", "bpm"], bp_sys: ["systolic_bp", "Systolic blood pressure", "mmHg"],
+    bp_dia: ["diastolic_bp", "Diastolic blood pressure", "mmHg"], spo2: ["spo2", "SpO2 (oxygen saturation)", "%"], temp: ["body_temp", "Body temperature", "°C"],
+    glucose: ["glucose", "Fasting glucose", "mg/dL"], sleep: ["sleep_hours", "Sleep hours", "h"], mood: ["mood", "Mood", "/ 5"], exercise: ["exercise", "Exercise", "min"] };
+  const ST = ["normal", "attention", "critical"];
+  const SUGGEST = ["How am I doing?", "What should I do if something is red?", "What is SpO2?", "What is heart rate?", "What is blood pressure?", "What is glucose?",
+    "What is body temperature?", "What is mood?", "What is the WHO-5?", "What is the KSS?", "How do I measure blood pressure?", "How do I measure SpO2?",
+    "How do I measure temperature?", "How does the traffic light work?", "What are the 5 hazards?", "Tell me about sleep",
+    "When should I escalate to the flight surgeon?", "Give me a gamification tip", "Is this validated?"];
+  const fab = $("#chatFab"), panel = $("#chatPanel"), log = $("#chatLog"), input = $("#chatInput"), ghost = $("#chatGhost");
+  let ctx = null, who = null, msgs = [], sending = false, greeted = false, suggestion = "";
+  fab.hidden = false;
+
+  const post = (path, body) => fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  const rich = (t) => esc(t).split("\n").map(l => `<p>${l.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")}</p>`).join("");
+  function paint() {
+    log.innerHTML = msgs.map(m => `<div class="chat-msg${m.role === "user" ? " me" : ""}">${rich(m.content)}${m.source === "llm" ? '<span class="chat-src">escrito con IA</span>' : ""}</div>`).join("")
+      + (sending ? '<div class="chat-msg"><p>…</p></div>' : "");
+    log.scrollTop = log.scrollHeight;
+  }
+  function say(role, content, source) { msgs.push({ role, content, source }); paint(); }
+  function greet() {
+    if (greeted || !ctx) return;
+    greeted = true;
+    post("/chat/status", { context: ctx }).then(s => {
+      $("#chatMode").textContent = s.llm_available ? "IA + sin conexión" : "sin conexión";
+      $("#chatNote").textContent = s.disclaimer + (s.llm_available ? " Some answers are written with AI." : "");
+      $("#chatQuick").innerHTML = (s.quick_questions || []).filter(t => !/log a measurement/i.test(t)).map(t => `<button type="button">${esc(t)}</button>`).join("");
+      say("assistant", s.greeting, "rules");
+    }).catch(() => { greeted = false; say("assistant", "I can't reach the assistant's server right now. Check that the team backend is running and try again.", "rules"); });
+  }
+  function send(text) {
+    const content = text.trim();
+    if (!content || sending || !ctx) return;
+    const history = msgs.map(m => ({ role: m.role, content: m.content }));
+    say("user", content); input.value = ""; hint(); sending = true; paint();
+    post("/chat", { message: content, history, context: ctx })
+      .then(d => { sending = false; say("assistant", d.reply, d.source); })
+      .catch(() => { sending = false; say("assistant", "I couldn't get an answer. The assistant needs the team backend running; your data on screen is not affected.", "rules"); });
+  }
+  // autocompletar en gris: Tab o flecha derecha lo acepta
+  function hint() {
+    const v = input.value;
+    suggestion = v.length >= 2 ? (SUGGEST.find(s => s.toLowerCase().startsWith(v.toLowerCase()) && s.length > v.length) || "") : "";
+    ghost.innerHTML = suggestion ? `<b>${esc(v)}</b>${esc(suggestion.slice(v.length))}` : "";
+  }
+  function toggle(open) {
+    panel.hidden = !open; fab.setAttribute("aria-expanded", String(open));
+    if (open) { greet(); input.focus(); }
+  }
+  fab.addEventListener("click", () => toggle(panel.hidden));
+  $("#chatClose").addEventListener("click", () => { toggle(false); fab.focus(); });
+  panel.addEventListener("keydown", (e) => { if (e.key === "Escape") { toggle(false); fab.focus(); } });
+  $("#chatForm").addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+  $("#chatQuick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) send(b.textContent); });
+  input.addEventListener("input", hint);
+  input.addEventListener("keydown", (e) => {
+    if (suggestion && (e.key === "Tab" || (e.key === "ArrowRight" && input.selectionStart === input.value.length))) { e.preventDefault(); input.value = suggestion; hint(); }
+  });
+
+  // render() llama aquí con lo que hay en pantalla
+  api.update = (a, i, states) => {
+    const inds = [];
+    for (const [k, [name, label, unit]] of Object.entries(MAP)) {
+      const s = states[k];
+      if (!s || s.v == null || !(s.st >= 0 && s.st <= 2)) continue;
+      inds.push({ indicator: name, label, value: +s.v.toFixed(IND[k].nd), unit, status: ST[s.st] });
+    }
+    ctx = { astronaut: state.aid, when: dayLabel(a.day[i]).replace("−", "-"), indicators: inds };
+    const bad = inds.filter(x => x.status !== "normal"), n = $("#chatN");
+    n.hidden = !bad.length; n.textContent = bad.length; n.dataset.st = bad.some(x => x.status === "critical") ? 2 : 1;
+    $("#chatWho").textContent = `${state.aid} · ${dayLabel(a.day[i])} · responde en inglés`;
+    if (who !== state.aid) { // otra persona: conversación nueva
+      who = state.aid; msgs = []; greeted = false; paint();
+      if (!panel.hidden) greet();
+    }
+  };
+  return api;
+})();
 
 // ---------- alarma sonora ----------
 // Cuando alguien entra en ROJO suena un aviso y una voz dice quién es y qué indicador está mal. Se repite hasta que

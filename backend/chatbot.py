@@ -25,10 +25,10 @@ from __future__ import annotations
 
 import os
 import unicodedata
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from models import HealthRecord, get_session, utcnow
@@ -439,9 +439,11 @@ def _context_summary_text(ctx: dict) -> str:
     if not ctx["has_data"]:
         return "No health records yet for this astronaut."
     lines = [f"Last measurement: {ctx['age_text']}."]
+    if ctx.get("external"):
+        lines.append("Colors come from your personal-baseline traffic light, not from fixed thresholds.")
     for field, a in ctx["assessment"].items():
-        label = LABELS.get(field, field)
-        unit = THRESHOLDS[field]["unit"]
+        label = a.get("label") or LABELS.get(field, field)
+        unit = a.get("unit") or THRESHOLDS.get(field, {}).get("unit", "")
         trend = ctx["trends"].get(field)
         trend_txt = f", trend {trend}" if trend and trend != "stable" else ""
         lines.append(f"- {label}: {a['value']} {unit} -> {STATUS_EN[a['status']]}{trend_txt}")
@@ -491,7 +493,7 @@ def _action_answer(ctx: dict, field: Optional[str]) -> str:
         a = ctx["assessment"].get(f)
         if not a:
             continue
-        label = LABELS.get(f, f)
+        label = a.get("label") or LABELS.get(f, f)
         if a["status"] == Status.NORMAL:
             lines.append(f"**{label}** is green, no action needed.")
         else:
@@ -551,6 +553,11 @@ def _gamification_answer(session: Session, astronaut_id: str, ctx: dict) -> str:
             "Today is a self-care day: you have indicators outside green. Follow the "
             "suggestion and measure again — getting back to green counts as a win 💪 "
             "(that's exactly the \"Honest Report\" idea).\n\n" + GAMIFICATION
+        )
+    if ctx.get("external"):
+        return (
+            "Going well! Everything you have on screen is green ✅. Keep the routine: "
+            "measuring at the same time each day makes your trends more useful.\n\n" + GAMIFICATION
         )
     return (
         f"Going well! You've logged {total} recent measurement(s) and today everything "
@@ -738,15 +745,66 @@ def _facts_for(message: str, ctx: dict) -> str:
 # Endpoints
 # --------------------------------------------------------------------------- #
 
+class ClientIndicator(BaseModel):
+    indicator: str = Field(max_length=40)
+    label: Optional[str] = Field(default=None, max_length=60)
+    value: float
+    unit: Optional[str] = Field(default=None, max_length=20)
+    status: Literal["normal", "attention", "critical"]
+
+
+class ClientContext(BaseModel):
+    """State the page already shows (prototipo/): the page computed the colors with the
+    personal-baseline traffic light, so the assistant uses them as given instead of
+    re-evaluating the database with fixed thresholds."""
+    astronaut: Optional[str] = Field(default=None, max_length=40)
+    when: Optional[str] = Field(default=None, max_length=40)
+    indicators: list[ClientIndicator] = Field(default_factory=list, max_length=20)
+
+
+def context_from_client(c: ClientContext) -> dict:
+    if not c.indicators:
+        return {"has_data": False, "alerts": [], "records": [], "external": True}
+    assessment, alerts = {}, []
+    for ind in c.indicators:
+        status = Status(ind.status)
+        label = ind.label or LABELS.get(ind.indicator, ind.indicator)
+        unit = ind.unit or THRESHOLDS.get(ind.indicator, {}).get("unit", "")
+        rec = _recommendation(ind.indicator, status)
+        value = int(ind.value) if float(ind.value).is_integer() else ind.value
+        assessment[ind.indicator] = {"value": value, "status": status, "recommendation": rec, "label": label, "unit": unit}
+        if status != Status.NORMAL:
+            alerts.append({
+                "indicator": ind.indicator, "label": label, "value": value, "unit": unit,
+                "status": status.value, "status_en": STATUS_EN[status], "recommendation": rec,
+            })
+    alerts.sort(key=lambda x: 0 if x["status"] == "critical" else 1)
+    return {
+        "has_data": True,
+        "age_text": c.when or "current reading",
+        "assessment": assessment,
+        "alerts": alerts,
+        "trends": {},
+        "records": [],
+        "external": True,
+    }
+
+
 class ChatRequest(BaseModel):
     message: str
     astronaut_id: str = "default"
     history: Optional[list] = None  # [{role: 'user'|'assistant', content: str}]
+    context: Optional[ClientContext] = None  # sent by prototipo/; the React app omits it
+
+
+class StatusRequest(BaseModel):
+    astronaut_id: str = "default"
+    context: Optional[ClientContext] = None
 
 
 @router.post("")
 def chat(payload: ChatRequest, session: Session = Depends(get_session)):
-    ctx = build_context(session, payload.astronaut_id)
+    ctx = context_from_client(payload.context) if payload.context else build_context(session, payload.astronaut_id)
 
     # 1) Rule-based core (always available, it's the fallback).
     rule_reply = rule_based_reply(payload.message, session, payload.astronaut_id, ctx)
@@ -768,7 +826,17 @@ def chat(payload: ChatRequest, session: Session = Depends(get_session)):
 @router.get("/status")
 def status(astronaut_id: str = "default", session: Session = Depends(get_session)):
     """Greeting + proactive alerts so the widget can warn when it opens."""
-    ctx = build_context(session, astronaut_id)
+    return _status_payload(build_context(session, astronaut_id))
+
+
+@router.post("/status")
+def status_with_context(payload: StatusRequest, session: Session = Depends(get_session)):
+    """Same as GET /chat/status, for pages that send their own on-screen state."""
+    ctx = context_from_client(payload.context) if payload.context else build_context(session, payload.astronaut_id)
+    return _status_payload(ctx)
+
+
+def _status_payload(ctx: dict) -> dict:
     if not ctx["has_data"]:
         greeting = (
             "Hi! I'm your health assistant. You haven't logged any measurements yet — "
